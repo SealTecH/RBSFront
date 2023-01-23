@@ -3,13 +3,20 @@
   <button mat-raised-button class="navigation-btn" color="warn" (click)="cancelRepair()" > Cancel</button>
   <button mat-raised-button class="navigation-btn" [disabled]="(state$ | async) < 0" (click)="toPreviousState()" > << Prev</button>
   <button mat-raised-button class="navigation-btn" [disabled]="(state$ | async) > 4" (click)="toNextState()"> Skip >></button>
+  <ng-container *ngIf="(state$ | async) < 3">
+    <mat-form-field appearance="fill" class="search-control">
+      <mat-label>Search/Custom</mat-label>
+      <input matInput class="search-control" [formControl]="searchControl" placeholder="search or type custom value">
+    </mat-form-field>
+    <button mat-raised-button class="navigation-btn next-step-button" [disabled]="!searchControl.value" (click)="toNextState()"> SET CUSTOM </button>
+  </ng-container>
 </div>
 <div [ngSwitch]="state$ | async">
   <!--  start Manufacturer layout-->
   <div *ngSwitchCase="ProcessState.Manufacturer" class="manufacturer-container">
-    <button mat-raised-button class="content-button" *ngFor="let brand of phoneBrands$ | async"
-            [class.active]="brand.id===selectedBrand"
-            (click)="selectBrand(brand.id)">
+    <button mat-raised-button class="content-button" *ngFor="let brand of manufacturers$ | async"
+            [class.active]="brand.id===selectedManufacturer"
+            (click)="selectManufacturer(brand.id)">
       {{ brand.name}}
     </button>
   <!--  end Manufacturer layout-->

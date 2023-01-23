@@ -1,12 +1,14 @@
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import {
-   Component, ChangeDetectionStrategy, ChangeDetectorRef
-} from '@angular/core';
-import { BehaviorSubject, take } from 'rxjs';
+   BehaviorSubject, take, map, shareReplay, combineLatest, startWith
+} from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { PhoneRootService } from '../phone-root/phone-root.service';
-import { PhoneBrandTree, PhoneDevice, Repair } from '../../../platform/connection/phone.interfaces';
+import {
+   PhoneBrandTree, PhoneDevice, Repair, RepairStatus
+} from '../../../platform/connection/phone.interfaces';
 import { RepairRecordedSnackComponent } from './repair-recored-snack.component';
 
 // eslint-disable-next-line no-shadow
@@ -27,18 +29,31 @@ export class RepairComponent {
    readonly ProcessState = ProcessState;
    readonly passButtons = [...Array(10).keys()].slice(1);
    readonly state$ = new BehaviorSubject<ProcessState>(ProcessState.Manufacturer);
-   readonly phoneBrands$ = this.phoneRootService.phoneBrands$;
+   readonly searchControl = new FormControl('');
+   readonly manufacturers$ = combineLatest([
+      this.searchControl.valueChanges.pipe(startWith('')),
+      this.phoneRootService.manufacturers$]).pipe(
+      map(([search, manufacturers]) => (!search
+         ? manufacturers : manufacturers.filter(({ name }) => name.toLowerCase().includes(search.toLowerCase())))),
+      shareReplay(1)
+   );
+
    readonly phoneBrandTree$ = this.phoneRootService.phoneBrandTree$;
    readonly malfunctions$ = this.phoneRootService.malfunctions$;
-   selectedBrand: number | null = null;
+   selectedManufacturer: number | null = null;
    selectedModel: number | null = null;
    selectedMalfunctions: number[] = [];
    graphPass: number[] = [];
-   passwordControl = new FormControl('');
-   costControl = new FormControl<number | null>(null);
-   commentsControl = new FormControl('');
-   startDateControl = new FormControl('');
-   endDateControl = new FormControl('');
+
+   customManufacturer: string | null = null;
+   customModel: string | null = null;
+   customMalfunction: string | null = null;
+
+   readonly passwordControl = new FormControl('');
+   readonly costControl = new FormControl<number | null>(null);
+   readonly commentsControl = new FormControl('');
+   readonly startDateControl = new FormControl('');
+   readonly endDateControl = new FormControl('');
    constructor(
 private phoneRootService: PhoneRootService,
                private router: Router,
@@ -49,11 +64,18 @@ private phoneRootService: PhoneRootService,
    }
 
    getModelsCollection(tree: PhoneBrandTree): PhoneDevice[] {
-      return this.selectedBrand === null ? [] : tree.get(this.selectedBrand!)!;
+      if (!this.selectedManufacturer) {
+         return [];
+      }
+
+      const devices = tree.get(this.selectedManufacturer!)!;
+
+      return !this.searchControl.value
+         ? devices : devices.filter(device => device.name.toLowerCase().includes(this.searchControl.value!.toLowerCase()));
    }
 
-   selectBrand(id: number): void {
-      this.selectedBrand = id;
+   selectManufacturer(id: number): void {
+      this.selectedManufacturer = id;
       this.state$.next(ProcessState.Model);
    }
 
@@ -89,13 +111,8 @@ private phoneRootService: PhoneRootService,
    }
 
    onFinish(): void {
-      this.state$.next(ProcessState.Manufacturer);
-      this.snackBar.openFromComponent(RepairRecordedSnackComponent, {
-         duration: 2000
-      });
-
       const repair: Repair = {
-         manufacturerId: this.selectedBrand,
+         manufacturerId: this.selectedManufacturer,
          modelId: this.selectedModel,
          malfunctions: this.selectedMalfunctions,
          pass: this.passwordControl.value,
@@ -104,18 +121,27 @@ private phoneRootService: PhoneRootService,
          comments: this.commentsControl.value,
          repairStartDay: this.startDateControl.value,
          repairEndDay: this.endDateControl.value,
-         createDate: new Date().getTime()
+         createDate: new Date().getTime(),
+         customManufacturer: this.customManufacturer,
+         customModel: this.customModel,
+         customMalfunction: this.customMalfunction,
+         status: RepairStatus.WaitingRepair
       };
 
-      this.phoneRootService.saveRepair(repair);
+      this.phoneRootService.addRepair(repair);
+      this.cancelRepair();
+      this.snackBar.openFromComponent(RepairRecordedSnackComponent, {
+         duration: 2000
+      });
    }
 
    cancelRepair(): void {
       this.state$.next(ProcessState.Manufacturer);
-      this.selectedBrand = null;
+      this.selectedManufacturer = null;
       this.selectedModel = null;
       this.selectedMalfunctions = [];
       this.graphPass = [];
+      this.searchControl.setValue(null);
    }
 
    toPreviousState(): void {
@@ -129,15 +155,20 @@ private phoneRootService: PhoneRootService,
          switch (state) {
          case ProcessState.Manufacturer:
             this.state$.next(ProcessState.Malfunction);
-            this.selectedBrand = null;
+            this.selectedManufacturer = null;
             this.selectedModel = null;
+            this.customManufacturer = this.searchControl.value;
+            this.searchControl.setValue(null);
             break;
          case ProcessState.Model:
             this.state$.next(ProcessState.Malfunction);
             this.selectedModel = null;
+            this.customModel = this.searchControl.value;
+            this.searchControl.setValue(null);
             break;
          case ProcessState.Malfunction:
             this.state$.next(ProcessState.Pass);
+            this.customMalfunction = this.searchControl.value;
             this.selectedMalfunctions = [];
             break;
          case ProcessState.Pass:

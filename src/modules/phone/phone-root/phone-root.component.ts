@@ -15,9 +15,9 @@ import { PhoneRootService } from './phone-root.service';
    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PhoneRootComponent extends Unsubscriber implements OnInit {
-   readonly columns = ['manufacturer', 'model', 'malfunction', 'cost', 'created', 'comments'];
+   readonly columns = ['manufacturer', 'model', 'malfunction', 'cost', 'created', 'comments', 'status'];
    loading$ = this.service.loading$;
-   readonly phoneBrands$ = this.service.phoneBrands$;
+   readonly manufacturers$ = this.service.manufacturers$;
    readonly phoneBrandTree$ = this.service.phoneBrandTree$;
    readonly malfunctions$ = this.service.malfunctions$;
    repairs$ = new BehaviorSubject<Repair[]>([]);

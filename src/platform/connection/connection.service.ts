@@ -17,7 +17,7 @@ export class ConnectionService {
    initPhones(): Observable<[PhoneBrand[], PhoneBrandTree, Malfunction[]]> {
       return forkJoin([
          this.http.get<{RECORDS: PhoneBrandRaw[]}>('./assets/brands.json'),
-         this.http.get<PhoneBrandRaw[]>('./assets/devices.light.json'),
+         this.http.get<PhoneDeviceRaw[]>('./assets/devices.light2018.json'),
          this.http.get<Malfunction[]>('./assets/malfunctions.json')
       ]).pipe(
          map(([{ RECORDS: brands }, devices, malfunctions]:
@@ -28,15 +28,19 @@ export class ConnectionService {
             // TODO remove cutting off
                .filter(brand => ALLOWED_MANUFACTURERS_IDS.includes(Number(brand.id)))
                .map((brand) => {
-                  outputTree.set(
-                     Number(brand.id),
-                     devices.filter(device => device.brandId === brand.id)
-                        .reverse()
-                        .map(device => ({ ...device, id: Number(device.id), brandId: Number(device.brandId) }))
-                  );
+                  const brandId = Number(brand.id);
+                  const devicesList = devices.filter(device => device.brandId === brandId)
+                     .reverse().map(device => ({ ...device, id: Number(device.id), brandId }));
 
-                  return { id: Number(brand.id), name: brand.name };
-               });
+                  if (devicesList.length) {
+                     outputTree.set(
+                        brandId,
+                        devicesList
+                     );
+                  }
+
+                  return { id: devicesList.length ? Number(brand.id) : null, name: brand.name };
+               }).filter(brand => !!brand.id) as PhoneBrand[];
 
             return [outputBrands, outputTree, malfunctions];
          })

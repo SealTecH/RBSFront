@@ -9,6 +9,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatTableModule } from '@angular/material/table';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { PhoneRootComponent } from './phone-root/phone-root.component';
 import { RepairComponent } from './repair/repair.component';
 import { PhoneRoutingModule } from './phone-routing.module';
@@ -38,7 +39,8 @@ import { RepairRecordedSnackComponent } from './repair/repair-recored-snack.comp
       MatInputModule,
       ReactiveFormsModule,
       MatNativeDateModule,
-      MatDatepickerModule
+      MatDatepickerModule,
+      MatAutocompleteModule
    ]
 })
 export class PhoneModule {}

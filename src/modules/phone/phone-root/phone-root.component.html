@@ -8,17 +8,17 @@
 
       <ng-container matColumnDef="manufacturer">
         <th mat-header-cell *matHeaderCellDef> Brand </th>
-        <td mat-cell *matCellDef="let repair"> {{ getManufacturer(phoneBrands$ | async, repair.manufacturerId)}} </td>
+        <td mat-cell *matCellDef="let repair"> {{ getManufacturer(manufacturers$ | async, repair.manufacturerId) || repair.customManufacturer}} </td>
       </ng-container>
 
       <ng-container matColumnDef="model">
         <th mat-header-cell *matHeaderCellDef> Model </th>
-        <td mat-cell *matCellDef="let repair"> {{ getModel(phoneBrandTree$ | async ,repair.manufacturerId, repair.modelId)}} </td>
+        <td mat-cell *matCellDef="let repair"> {{ getModel(phoneBrandTree$ | async ,repair.manufacturerId, repair.modelId) || repair.customModel}} </td>
       </ng-container>
 
       <ng-container matColumnDef="malfunction">
         <th mat-header-cell *matHeaderCellDef> Malfunction </th>
-        <td mat-cell *matCellDef="let repair"> {{ getMalfunction(malfunctions$ | async, repair.malfunctions)}} </td>
+        <td mat-cell *matCellDef="let repair"> {{ getMalfunction(malfunctions$ | async, repair.malfunctions)  || repair.customMalfunction}} </td>
       </ng-container>
 
       <ng-container matColumnDef="cost">
@@ -39,6 +39,13 @@
         <th mat-header-cell *matHeaderCellDef> Comments </th>
         <td mat-cell *matCellDef="let repair">
           {{ repair.comments }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef> Status </th>
+        <td mat-cell *matCellDef="let repair">
+          {{ repair.status }}
         </td>
       </ng-container>
 
