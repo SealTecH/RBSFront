@@ -1,0 +1,121 @@
+<div>
+  <button mat-raised-button class="navigation-btn" (click)="openDashboard()" > Dashboard</button>
+  <button mat-raised-button class="navigation-btn" color="warn" (click)="cancelRepair()" > Cancel</button>
+  <button mat-raised-button class="navigation-btn" [disabled]="(state$ | async) < 0" (click)="toPreviousState()" > << Prev</button>
+  <button mat-raised-button class="navigation-btn" [disabled]="(state$ | async) > 4" (click)="toNextState()"> Skip >></button>
+</div>
+<div [ngSwitch]="state$ | async">
+  <!--  start Manufacturer layout-->
+  <div *ngSwitchCase="ProcessState.Manufacturer" class="manufacturer-container">
+    <button mat-raised-button class="content-button" *ngFor="let brand of phoneBrands$ | async"
+            [class.active]="brand.id===selectedBrand"
+            (click)="selectBrand(brand.id)">
+      {{ brand.name}}
+    </button>
+  <!--  end Manufacturer layout-->
+  </div>
+
+  <!--  start Model layout-->
+  <div *ngSwitchCase="ProcessState.Model">
+    <button mat-raised-button class="content-button" *ngFor="let model of getModelsCollection(phoneBrandTree$ | async)"
+            [class.active]="model.id===selectedModel"
+            (click)="selectModel(model.id)">
+      {{ model.name}}
+      <br>
+      <img [src]="model.picture" width="75" height="75">
+    </button>
+    <!--  end Model layout-->
+  </div>
+
+  <!--  start Malfunction layout-->
+  <div *ngSwitchCase="ProcessState.Malfunction">
+    <button mat-raised-button class="content-button" *ngFor="let malfunction of malfunctions$| async"
+            [class.active]="selectedMalfunctions.includes(malfunction.id)"
+            (click)="selectMalfunction(malfunction.id)">
+      {{ malfunction.name}}
+    </button>
+    <button mat-raised-button class="content-button next-step-button"
+            (click)="onMalfunctionProceed()">
+      Next
+    </button>
+    <!--  end Malfunction layout-->
+  </div>
+
+  <!--  start Pass layout-->
+  <div *ngSwitchCase="ProcessState.Pass">
+    <div>
+      <mat-form-field class="pass-field" appearance="fill">
+        <mat-label>Non-graph Password</mat-label>
+        <input matInput class="pass-field" [formControl]="passwordControl" placeholder="password">
+      </mat-form-field>
+    </div>
+    <div class="graph-pass-main-container">
+      <div class="graph-pass-pass-container">
+        <button  mat-raised-button class="content-button" *ngFor="let pass of passButtons"
+                 [class.active]="graphPass.includes(pass)"
+                 (click)="graphPassAdd(pass)">{{pass}}</button>
+      </div>
+      <div class="graph-pass-controls-container">
+        <button mat-raised-button class="content-button next-step-button"
+                (click)="onPassProceed()">
+          Next
+        </button>
+        <button mat-raised-button class="content-button" color="warn"
+                (click)="graphPassReset()">
+          Reset
+        </button>
+      </div>
+    </div>
+
+    <!--  end Pass layout-->
+  </div>
+
+  <!--  start Final layout-->
+  <div *ngSwitchCase="ProcessState.Final">
+    <div>
+      <mat-form-field appearance="fill" class="example-form-field">
+        <mat-label>Repair start date</mat-label>
+        <input matInput [matDatepicker]="startPicker" [formControl]="startDateControl">
+        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker>
+          <mat-datepicker-actions>
+            <button mat-button matDatepickerCancel>Cancel</button>
+            <button mat-raised-button color="primary" matDatepickerApply>Apply</button>
+          </mat-datepicker-actions>
+        </mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="example-form-field">
+        <mat-label>Repair offer date</mat-label>
+        <input matInput [matDatepicker]="endPicker" [formControl]="endDateControl">
+        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+        <mat-datepicker #endPicker>
+          <mat-datepicker-actions>
+            <button mat-button matDatepickerCancel>Cancel</button>
+            <button mat-raised-button color="primary" matDatepickerApply>Apply</button>
+          </mat-datepicker-actions>
+        </mat-datepicker>
+      </mat-form-field>
+    </div>
+    <div>
+      <mat-form-field class="pass-field" appearance="fill">
+        <mat-label>Cost</mat-label>
+        <input matInput class="pass-field" type="number" [formControl]="costControl" placeholder="Cost">
+      </mat-form-field>
+    </div>
+    <div>
+      <mat-form-field class="pass-field" appearance="fill">
+        <mat-label>Comments</mat-label>
+        <textarea  matInput class="pass-field" type="number" [formControl]="commentsControl" placeholder="Comments"></textarea>
+      </mat-form-field>
+    </div>
+    <button mat-raised-button class="content-button next-step-button"
+            (click)="onFinish()">
+      Finish
+    </button>
+    <!--  end Final layout-->
+  </div>
+
+</div>
