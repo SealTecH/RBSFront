@@ -2,14 +2,16 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/
 import {
    BehaviorSubject, take, map, shareReplay, combineLatest, startWith
 } from 'rxjs';
-import { FormControl } from '@angular/forms';
+import { FormControl, FormArray, AbstractControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { PhoneRootService } from '../phone-root/phone-root.service';
+import { PhoneRootService } from '../phone-root.service';
 import {
-   PhoneBrandTree, PhoneDevice, Repair, RepairStatus
+   PhoneBrandTree, PhoneDevice
 } from '../../../platform/connection/phone.interfaces';
-import { RepairRecordedSnackComponent } from './repair-recored-snack.component';
+import { Repair } from '../interfaces';
+import { RepairStatus } from '../enums';
+import { RepairRecordedSnackComponent } from '../snacks/repair-recored-snack.component';
 
 // eslint-disable-next-line no-shadow
 enum ProcessState {
@@ -52,14 +54,11 @@ export class RepairComponent {
    readonly passwordControl = new FormControl('');
    readonly costControl = new FormControl<number | null>(null);
    readonly commentsControl = new FormControl('');
-   readonly startDateControl = new FormControl('');
-   readonly endDateControl = new FormControl('');
-   constructor(
-private phoneRootService: PhoneRootService,
+   readonly imeiControl = new FormControl<number | null>(null);
+   constructor(private phoneRootService: PhoneRootService,
                private router: Router,
                private cd: ChangeDetectorRef,
-               private snackBar: MatSnackBar
-   ) {
+               private snackBar: MatSnackBar) {
 
    }
 
@@ -71,7 +70,8 @@ private phoneRootService: PhoneRootService,
       const devices = tree.get(this.selectedManufacturer!)!;
 
       return !this.searchControl.value
-         ? devices : devices.filter(device => device.name.toLowerCase().includes(this.searchControl.value!.toLowerCase()));
+         ? devices.slice(0, 50)
+         : devices.filter(device => device.name.toLowerCase().includes(this.searchControl.value!.toLowerCase())).slice(0, 20);
    }
 
    selectManufacturer(id: number): void {
@@ -112,6 +112,7 @@ private phoneRootService: PhoneRootService,
 
    onFinish(): void {
       const repair: Repair = {
+         id: new Date().getTime(),
          manufacturerId: this.selectedManufacturer,
          modelId: this.selectedModel,
          malfunctions: this.selectedMalfunctions,
@@ -119,8 +120,7 @@ private phoneRootService: PhoneRootService,
          graphPass: this.graphPass,
          cost: this.costControl.value,
          comments: this.commentsControl.value,
-         repairStartDay: this.startDateControl.value,
-         repairEndDay: this.endDateControl.value,
+         imei: this.imeiControl.value,
          createDate: new Date().getTime(),
          customManufacturer: this.customManufacturer,
          customModel: this.customModel,

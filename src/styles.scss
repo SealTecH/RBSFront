@@ -1,1 +1,17 @@
 /* You can add global styles to this file, and also import other style files */
+
+@import "styles/colors";
+ body {
+   color: $text-color;
+   background-color: $base-bg;
+ }
+.display-flex {
+  display: flex;
+}
+.selected-bg {
+  background-color: $selected;
+}
+.mdc-button {
+  width: 10vw;
+  height: 5vh;
+}

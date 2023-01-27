@@ -51,6 +51,7 @@
             "devDependencies": true
          }
       ],
+     "function-paren-newline": ["error", "consistent"],
       "lines-between-class-members": [
          "error",
          "always",

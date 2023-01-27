@@ -1,0 +1,32 @@
+.input-control, .select-control {
+  min-width: 20vw;
+  font-size: 2rem;
+}
+.field-container {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.inline-container {
+  display: flex;
+  justify-content: space-between;
+}
+.navigation-btn {
+  min-height: 50px;
+  margin: 10px;
+}
+.malfunction-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.malfunction-btn {
+  width: 50px;
+  height: 50px;
+  margin: 5px;
+}
+
+:host {
+  mat-card {
+    margin-top: 15px;
+  }
+}

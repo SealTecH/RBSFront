@@ -1,14 +1,14 @@
 <div>
   <button mat-raised-button class="navigation-btn" (click)="openDashboard()" > Dashboard</button>
   <button mat-raised-button class="navigation-btn" color="warn" (click)="cancelRepair()" > Cancel</button>
-  <button mat-raised-button class="navigation-btn" [disabled]="(state$ | async) < 0" (click)="toPreviousState()" > << Prev</button>
-  <button mat-raised-button class="navigation-btn" [disabled]="(state$ | async) > 4" (click)="toNextState()"> Skip >></button>
+  <button mat-raised-button class="navigation-btn" [disabled]="(state$ | async) < 1" (click)="toPreviousState()" > << Prev</button>
+  <button mat-raised-button class="navigation-btn" [disabled]="(state$ | async) > 3" (click)="toNextState()"> Skip >></button>
   <ng-container *ngIf="(state$ | async) < 3">
     <mat-form-field appearance="fill" class="search-control">
       <mat-label>Search/Custom</mat-label>
       <input matInput class="search-control" [formControl]="searchControl" placeholder="search or type custom value">
     </mat-form-field>
-    <button mat-raised-button class="navigation-btn next-step-button" [disabled]="!searchControl.value" (click)="toNextState()"> SET CUSTOM </button>
+    <button mat-raised-button class="navigation-btn" color="primary" [disabled]="!searchControl.value" (click)="toNextState()"> SET CUSTOM </button>
   </ng-container>
 </div>
 <div [ngSwitch]="state$ | async">
@@ -41,7 +41,7 @@
             (click)="selectMalfunction(malfunction.id)">
       {{ malfunction.name}}
     </button>
-    <button mat-raised-button class="content-button next-step-button"
+    <button mat-raised-button class="content-button" color="primary"
             (click)="onMalfunctionProceed()">
       Next
     </button>
@@ -63,7 +63,7 @@
                  (click)="graphPassAdd(pass)">{{pass}}</button>
       </div>
       <div class="graph-pass-controls-container">
-        <button mat-raised-button class="content-button next-step-button"
+        <button mat-raised-button class="content-button" color="primary"
                 (click)="onPassProceed()">
           Next
         </button>
@@ -79,49 +79,31 @@
 
   <!--  start Final layout-->
   <div *ngSwitchCase="ProcessState.Final">
-    <div>
-      <mat-form-field appearance="fill" class="example-form-field">
-        <mat-label>Repair start date</mat-label>
-        <input matInput [matDatepicker]="startPicker" [formControl]="startDateControl">
-        <mat-hint>MM/DD/YYYY</mat-hint>
-        <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
-        <mat-datepicker #startPicker>
-          <mat-datepicker-actions>
-            <button mat-button matDatepickerCancel>Cancel</button>
-            <button mat-raised-button color="primary" matDatepickerApply>Apply</button>
-          </mat-datepicker-actions>
-        </mat-datepicker>
-      </mat-form-field>
+    <div class="display-flex">
+      <div>
+        <mat-form-field class="pass-field" appearance="fill">
+          <mat-label>Cost</mat-label>
+          <input matInput class="pass-field" type="number" [formControl]="costControl" placeholder="Cost">
+        </mat-form-field>
 
-      <mat-form-field appearance="fill" class="example-form-field">
-        <mat-label>Repair offer date</mat-label>
-        <input matInput [matDatepicker]="endPicker" [formControl]="endDateControl">
-        <mat-hint>MM/DD/YYYY</mat-hint>
-        <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
-        <mat-datepicker #endPicker>
-          <mat-datepicker-actions>
-            <button mat-button matDatepickerCancel>Cancel</button>
-            <button mat-raised-button color="primary" matDatepickerApply>Apply</button>
-          </mat-datepicker-actions>
-        </mat-datepicker>
-      </mat-form-field>
+        <mat-form-field class="pass-field" appearance="fill">
+          <mat-label>Comments</mat-label>
+          <textarea  matInput class="pass-field" type="number" [formControl]="commentsControl" placeholder="Comments"></textarea>
+        </mat-form-field>
+
+        <mat-form-field class="pass-field" appearance="fill">
+          <mat-label>IMEI</mat-label>
+          <textarea  matInput class="pass-field" type="number" [formControl]="imeiControl" placeholder="IMEI"></textarea>
+        </mat-form-field>
+      </div>
+      <div>
+        <button mat-raised-button class="content-button" color="primary"
+                (click)="onFinish()">
+          Finish
+        </button>
+      </div>
     </div>
-    <div>
-      <mat-form-field class="pass-field" appearance="fill">
-        <mat-label>Cost</mat-label>
-        <input matInput class="pass-field" type="number" [formControl]="costControl" placeholder="Cost">
-      </mat-form-field>
-    </div>
-    <div>
-      <mat-form-field class="pass-field" appearance="fill">
-        <mat-label>Comments</mat-label>
-        <textarea  matInput class="pass-field" type="number" [formControl]="commentsControl" placeholder="Comments"></textarea>
-      </mat-form-field>
-    </div>
-    <button mat-raised-button class="content-button next-step-button"
-            (click)="onFinish()">
-      Finish
-    </button>
+
     <!--  end Final layout-->
   </div>
 

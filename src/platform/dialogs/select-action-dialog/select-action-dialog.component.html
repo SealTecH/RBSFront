@@ -1,0 +1,16 @@
+<h1 mat-dialog-title>{{data.title}}</h1>
+<div mat-dialog-content>
+  <p>{{data.message}}</p>
+  <mat-form-field class="select-control" appearance="fill">
+    <mat-label>{{data.dropdownTitle}}</mat-label>
+    <mat-select  [required]="true" [formControl]="selectControl">
+      <mat-option *ngFor="let option of data.dropdownList" [value]="option.value">
+        {{option.label}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+  <button mat-raised-button (click)="cancel()">{{data.secondaryButtonLabel || 'Cancel'}}</button>
+  <button mat-raised-button [mat-dialog-close]="selectControl.value" [disabled]="selectControl.invalid" cdkFocusInitial>{{data.primaryButtonLabel || 'Select'}}</button>
+</div>

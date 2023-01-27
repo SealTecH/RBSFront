@@ -1,0 +1,18 @@
+import { RepairStatus } from './enums';
+
+export interface Repair {
+  id: number,
+  manufacturerId: number | null;
+  modelId: number | null;
+  malfunctions: number[];
+  pass: string | null;
+  graphPass: number[];
+  cost: number | null;
+  imei: number | null;
+  comments: string | null;
+  createDate: number;
+  customManufacturer: string | null;
+  customModel: string | null;
+  customMalfunction: string | null;
+  status: RepairStatus
+}
