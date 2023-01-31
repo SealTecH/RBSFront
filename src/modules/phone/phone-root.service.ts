@@ -1,19 +1,22 @@
 import { Injectable } from '@angular/core';
 import {
-   BehaviorSubject, Observable, take, map, of
+   BehaviorSubject, Observable, take, map, of, from, tap
 } from 'rxjs';
-import { ConnectionService } from '../../platform';
 import {
-   PhoneBrandTree, PhoneBrand, Malfunction
-} from '../../platform/connection/phone.interfaces';
+   Firestore, collectionData, collection, docData, addDoc, deleteDoc, updateDoc
+} from '@angular/fire/firestore';
+import { doc, DocumentReference } from '@firebase/firestore';
+import { ConnectionService } from '../../platform';
+import { PhoneBrandTree, PhoneBrand, Malfunction } from '../../platform/connection/phone.interfaces';
+import { Unsubscriber } from '../../utils/unsubscriber/unsubscriber';
 import { Repair } from './interfaces';
-import { RepairStatus } from './enums';
-
-const LOCAL_STORAGE_REPAIRS_KEY = 'RepairsRecords';
+import { Tables } from './enums';
+import { RepairConverter } from './converters/repair.converter';
 
 @Injectable({ providedIn: 'root' })
-export class PhoneRootService {
-   private loadingSource = new BehaviorSubject<boolean>(false);
+export class PhoneRootService extends Unsubscriber {
+   readonly repairsCollection = collection(this.firestore, Tables.Repairs).withConverter<Repair>(new RepairConverter());
+   private loadingSource = new BehaviorSubject<boolean>(true);
    readonly loading$: Observable<boolean> = this.loadingSource.pipe();
    private manufacturersSource = new BehaviorSubject<PhoneBrand[]>([]);
    readonly manufacturers$: Observable<PhoneBrand[]> = this.manufacturersSource.pipe();
@@ -21,10 +24,11 @@ export class PhoneRootService {
    readonly phoneBrandTree$: Observable<PhoneBrandTree> = this.PhoneBrandTreeSource.pipe();
    private malfunctionsSource = new BehaviorSubject<PhoneBrand[]>([]);
    readonly malfunctions$: Observable<PhoneBrand[]> = this.malfunctionsSource.pipe();
-   private repairsSource = new BehaviorSubject<Repair[]>([]);
-   readonly repairs$: Observable<Repair[]> = this.repairsSource.pipe();
+   readonly repairs$: Observable<Repair[]> = this.getAll().pipe(tap(res => console.log(res)));
    isInitialized: boolean = false;
-   constructor(private connectionService: ConnectionService) {
+   constructor(private connectionService: ConnectionService,
+               private firestore: Firestore) {
+      super();
    }
 
    init(): Observable<[PhoneBrand[], PhoneBrandTree, Malfunction[]]> {
@@ -33,7 +37,7 @@ export class PhoneRootService {
       }
 
       this.isInitialized = true;
-      this.reloadRepairs();
+      this.subs = this.repairs$.pipe(take(1)).subscribe(() => this.loadingSource.next(false));
 
       return this.connectionService.initPhones().pipe(take(1), map(([brands, tree, malfunctions]) => {
          this.malfunctionsSource.next(malfunctions);
@@ -44,60 +48,31 @@ export class PhoneRootService {
       }));
    }
 
-   addRepair(repair: Repair): void {
-      const records: Repair[] = this.getRepairs();
-
-      records.push(repair);
-      this.saveRepairs(records);
+   getAll(): Observable<Repair[]> {
+      return collectionData(this.repairsCollection, {
+         idField: 'id'
+      }) as Observable<Repair[]>;
    }
 
-   updateRepair(updatedRepair: Repair): Observable<void> {
-      const records: Repair[] = this.getRepairs().filter(repair => repair.id !== updatedRepair.id);
+   createRepair(repair: Repair): Observable<DocumentReference<Repair>> {
+      this.loadingSource.next(true);
 
-      records.push(updatedRepair);
-      this.saveRepairs(records);
-
-      return of();
+      return from(addDoc<Repair>(this.repairsCollection, repair))
+         .pipe(tap(() => this.loadingSource.next(false)));
    }
 
-   deleteRepair(id: number): Observable<any> {
-      const repairs = this.getRepairs();
-      const modifiedRepairs = repairs.splice(this.findRecordIndex(repairs, id), 1);
+   updateRepair(repair: Repair): Observable<void> {
+      this.loadingSource.next(true);
 
-      this.saveRepairs(modifiedRepairs);
-
-      return of(true);
+      return from(updateDoc(doc(this.firestore, `${Tables.Repairs}/${repair.id}`), { ...repair }))
+         .pipe(tap(() => this.loadingSource.next(false)));
    }
 
-   changeRepairStatus(id: number, status: RepairStatus): Observable<any> {
-      const repairs = this.getRepairs();
-
-     repairs.at(this.findRecordIndex(repairs, id))!.status = status;
-     this.saveRepairs(repairs);
-
-     return of(true);
+   deleteRepair(id: string): Observable<void> {
+      return from(deleteDoc(doc(this.firestore, `${Tables.Repairs}/${id}`)));
    }
 
-   getRepairById(id: number): Observable<Repair> {
-      return of(this.getRepairs().find(repair => repair.id === id)!);
-   }
-
-   private getRepairs(): Repair[] {
-      return JSON.parse(localStorage.getItem(LOCAL_STORAGE_REPAIRS_KEY) ?? '[]');
-   }
-
-   private saveRepairs(records: Repair[]): void {
-      localStorage.setItem(LOCAL_STORAGE_REPAIRS_KEY, JSON.stringify(records));
-      this.reloadRepairs();
-   }
-
-   private findRecordIndex(records: Repair [], id: number): number {
-      return records.findIndex(repair => repair.id === id);
-   }
-
-   private reloadRepairs(): void {
-      const repairs = this.getRepairs();
-
-      this.repairsSource.next(repairs);
+   getRepairById(id: string): Observable<Repair> {
+      return docData(doc(this.firestore, `${Tables.Repairs}/${id}`), { idField: 'id' }) as Observable<Repair>;
    }
 }

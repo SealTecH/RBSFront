@@ -2,13 +2,11 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/
 import {
    BehaviorSubject, take, map, shareReplay, combineLatest, startWith
 } from 'rxjs';
-import { FormControl, FormArray, AbstractControl } from '@angular/forms';
+import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { PhoneRootService } from '../phone-root.service';
-import {
-   PhoneBrandTree, PhoneDevice
-} from '../../../platform/connection/phone.interfaces';
+import { PhoneBrandTree, PhoneDevice } from '../../../platform/connection/phone.interfaces';
 import { Repair } from '../interfaces';
 import { RepairStatus } from '../enums';
 import { RepairRecordedSnackComponent } from '../snacks/repair-recored-snack.component';
@@ -112,7 +110,7 @@ export class RepairComponent {
 
    onFinish(): void {
       const repair: Repair = {
-         id: new Date().getTime(),
+         id: '',
          manufacturerId: this.selectedManufacturer,
          modelId: this.selectedModel,
          malfunctions: this.selectedMalfunctions,
@@ -128,7 +126,7 @@ export class RepairComponent {
          status: RepairStatus.WaitingRepair
       };
 
-      this.phoneRootService.addRepair(repair);
+      this.phoneRootService.createRepair(repair);
       this.cancelRepair();
       this.snackBar.openFromComponent(RepairRecordedSnackComponent, {
          duration: 2000

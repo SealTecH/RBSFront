@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "rbservice-4a5ca": {
+      "hosting": {
+        "RBSFront": [
+          "rbservice-4a5ca"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "rbservice-4a5ca"
+  }
+}

@@ -2,9 +2,9 @@
 <ng-template #repair>
  <div class="btn-container">
    <button  mat-raised-button class="content-button" (click)="createNewRepair()">New Repair</button>
-   <button mat-raised-button class="content-button" [disabled]="selectedRowId===null" (click)="deleteRow()">Delete</button>
-   <button mat-raised-button class="content-button" [disabled]="selectedRowId===null" (click)="goToDetails()">Details</button>
-   <button mat-raised-button class="content-button" [disabled]="selectedRowId===null" (click)="changeStatus()">Change Status</button>
+   <button mat-raised-button class="content-button" [disabled]="selectedRow===null" (click)="deleteRow()">Delete</button>
+   <button mat-raised-button class="content-button" [disabled]="selectedRow===null" (click)="goToDetails()">Details</button>
+   <button mat-raised-button class="content-button" [disabled]="selectedRow===null" (click)="changeStatus()">Change Status</button>
  </div>
   <div>
     <table mat-table [dataSource]="repairs$ | async" class="mat-elevation-z8">
@@ -53,7 +53,7 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="columns"></tr>
-      <tr mat-row [class.selected]="row.id===selectedRowId" *matRowDef="let row; columns: columns;" (click)="selectRow(row)" ></tr>
+      <tr mat-row [class.selected]="row.id===selectedRow?.id" *matRowDef="let row; columns: columns;" (click)="selectRow(row)" ></tr>
 
       <mat-paginator [pageSizeOptions]="[5, 10, 20]"
                      showFirstLastButtons

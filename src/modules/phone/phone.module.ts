@@ -14,6 +14,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
+import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { PhoneRootComponent } from './phone-root/phone-root.component';
 import { RepairComponent } from './repair/repair.component';
 import { PhoneRoutingModule } from './phone-routing.module';
@@ -35,6 +36,7 @@ import { RepairDetailsComponent } from './repair-details/repair-details.componen
       PhoneRootComponent
    ],
    imports: [
+      AngularFirestoreModule,
       CommonModule,
       PhoneRoutingModule,
       MatSnackBarModule,

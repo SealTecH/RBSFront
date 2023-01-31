@@ -5,7 +5,7 @@ import {
    PhoneBrandTree, Malfunction, PhoneDeviceRaw, PhoneBrand, PhoneBrandRaw
 } from './phone.interfaces';
 
-const ALLOWED_MANUFACTURERS_IDS = [4, 80, 57, 82, 95, 44, 45, 106, 74, 72, 62, 6, 7, 1];
+const ALLOWED_MANUFACTURERS_IDS = [4, 80, 57, 82, 95, 44, 45, 106, 74, 72, 73, 62, 6, 7, 1, 110, 114];
 
 @Injectable({
    providedIn: 'root'
@@ -17,7 +17,7 @@ export class ConnectionService {
    initPhones(): Observable<[PhoneBrand[], PhoneBrandTree, Malfunction[]]> {
       return forkJoin([
          this.http.get<{RECORDS: PhoneBrandRaw[]}>('./assets/brands.json'),
-         this.http.get<PhoneDeviceRaw[]>('./assets/devices.light2018.json'),
+         this.http.get<PhoneDeviceRaw[]>('./assets/devices.onlyNeededBrands.2012.json'),
          this.http.get<Malfunction[]>('./assets/malfunctions.json')
       ]).pipe(
          map(([{ RECORDS: brands }, devices, malfunctions]:

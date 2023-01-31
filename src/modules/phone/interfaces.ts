@@ -1,7 +1,7 @@
 import { RepairStatus } from './enums';
 
 export interface Repair {
-  id: number,
+  id: string,
   manufacturerId: number | null;
   modelId: number | null;
   malfunctions: number[];
@@ -14,5 +14,5 @@ export interface Repair {
   customManufacturer: string | null;
   customModel: string | null;
   customMalfunction: string | null;
-  status: RepairStatus
+  status: RepairStatus;
 }

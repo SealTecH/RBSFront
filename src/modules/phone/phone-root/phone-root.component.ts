@@ -29,7 +29,7 @@ export class PhoneRootComponent extends Unsubscriber implements OnInit {
    readonly phoneBrandTree$ = this.phoneRootService.phoneBrandTree$;
    readonly malfunctions$ = this.phoneRootService.malfunctions$;
    readonly repairs$ = this.phoneRootService.repairs$;
-   selectedRowId: number | null = null;
+   selectedRow: Repair | null = null;
    constructor(private router: Router,
                private phoneRootService: PhoneRootService,
                private dialog: MatDialog) {
@@ -45,7 +45,7 @@ export class PhoneRootComponent extends Unsubscriber implements OnInit {
    }
 
    goToDetails(): void {
-      this.router.navigate([PhoneRoutes.Repair, this.selectedRowId]);
+      this.router.navigate([PhoneRoutes.Repair, this.selectedRow!.id]);
    }
 
    getManufacturer(brands: PhoneBrand[], id: number): string | undefined {
@@ -64,11 +64,11 @@ export class PhoneRootComponent extends Unsubscriber implements OnInit {
       return new Date(date).toDateString();
    }
 
-   selectRow({ id }: Repair): void {
-      if (this.selectedRowId === id) {
-         this.selectedRowId = null;
+   selectRow(repair: Repair): void {
+      if (this.selectedRow?.id === repair.id) {
+         this.selectedRow = null;
       } else {
-         this.selectedRowId ??= id;
+         this.selectedRow ??= repair;
       }
    }
 
@@ -79,8 +79,9 @@ export class PhoneRootComponent extends Unsubscriber implements OnInit {
 
       dialogRef.afterClosed().pipe(take(1)).subscribe((result) => {
          if (result) {
-            this.phoneRootService.deleteRepair(this.selectedRowId!);
-            this.selectedRowId = null;
+            this.subs = this.phoneRootService.deleteRepair(this.selectedRow!.id).subscribe(() => {
+               this.selectedRow = null;
+            });
          }
       });
    }
@@ -98,8 +99,8 @@ export class PhoneRootComponent extends Unsubscriber implements OnInit {
 
       dialogRef.afterClosed().pipe(take(1)).subscribe((result) => {
          if (result) {
-            this.phoneRootService.changeRepairStatus(this.selectedRowId!, result);
-            this.selectedRowId = null;
+            this.subs = this.phoneRootService.updateRepair({ ...this.selectedRow!, status: result })
+               .subscribe(() => this.selectedRow = null);
          }
       });
    }

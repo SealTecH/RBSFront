@@ -29,7 +29,7 @@ export class RepairDetailsComponent extends Unsubscriber {
    readonly statusOptions = Object.entries(RepairStatus).map(([key, value]) => ({ label: key, value }));
    repair: Repair;
    form = new FormGroup<FormEntity<Repair>>({
-      id: new FormControl<number>(new Date().getTime(), { nonNullable: true }),
+      id: new FormControl<string>('', { nonNullable: true }),
       manufacturerId: new FormControl<number| null>(null),
       modelId: new FormControl<number| null>(null),
       malfunctions: new FormArray([] as AbstractControl[]),
@@ -55,7 +55,7 @@ export class RepairDetailsComponent extends Unsubscriber {
    ngOnInit(): void {
       const id = this.route.snapshot.paramMap.get('id');
 
-      this.subs = this.phoneRootService.getRepairById(Number(id)).pipe(take(1)).subscribe((repair) => {
+      this.subs = this.phoneRootService.getRepairById(id!).pipe(take(1)).subscribe((repair) => {
          this.repair = repair;
          this.setupForm();
       });

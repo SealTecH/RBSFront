@@ -8,3 +8,7 @@ export enum RepairStatus {
   WaitingResolution = 'WaitingResolution',
   Done = 'Done'
 }
+
+export enum Tables {
+  Repairs = 'phone-repairs'
+}
