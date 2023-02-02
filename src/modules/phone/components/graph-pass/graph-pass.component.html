@@ -1,0 +1,33 @@
+<div>
+  <div class="graph-pass-main-container">
+    <div class="graph-pass-pass-container">
+      <ng-container *ngFor="let pass of passButtons; let last = last">
+        <button  mat-raised-button class="content-button"
+                 [class.active]="graphPass.includes(pass)"
+                 (click)="graphPassAdd(pass)">{{pass}}</button>
+      </ng-container>
+      <div class="arrow-container">
+          <span class="arrow"  *ngFor="let arrow of calculateArrows()" [ngStyle]="{
+            'margin-top.vh': arrow.marginTop*5,
+            'margin-right.vw': arrow.marginRight*5,
+            'transform': 'rotate('+arrow.vector+'deg)'
+            }" >{{arrow.index}}</span>
+      </div>
+    </div>
+
+
+
+    <div class="graph-pass-controls-container">
+      <button mat-raised-button class="content-button" color="primary"
+              (click)="onPassProceed()">
+        Next
+      </button>
+      <button mat-raised-button class="content-button" color="warn"
+              (click)="graphPassReset()">
+        Reset
+      </button>
+    </div>
+  </div>
+
+
+</div>

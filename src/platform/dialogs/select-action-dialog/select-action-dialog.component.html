@@ -3,7 +3,7 @@
   <p>{{data.message}}</p>
   <mat-form-field class="select-control" appearance="fill">
     <mat-label>{{data.dropdownTitle}}</mat-label>
-    <mat-select  [required]="true" [formControl]="selectControl">
+    <mat-select [required]="true" [formControl]="selectControl">
       <mat-option *ngFor="let option of data.dropdownList" [value]="option.value">
         {{option.label}}
       </mat-option>

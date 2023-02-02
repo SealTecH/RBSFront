@@ -1,19 +1,22 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
-   take, combineLatest, startWith, map, shareReplay
+   take, startWith, map, shareReplay
 } from 'rxjs';
 import {
    FormGroup, FormControl, FormArray, AbstractControl, Validators
 } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { PhoneRootService } from '../phone-root.service';
-import { Unsubscriber } from '../../../utils/unsubscriber/unsubscriber';
-import { Repair } from '../interfaces';
-import { RepairStatus } from '../enums';
-import { FormEntity } from '../../../platform/interfaces';
-import { PhoneBrandTree, PhoneDevice } from '../../../platform/connection/phone.interfaces';
-import { RepairRecordedSnackComponent } from '../snacks/repair-recored-snack.component';
+import { MatDialog } from '@angular/material/dialog';
+import { PhoneRootService } from '../../phone-root.service';
+import { Unsubscriber } from '../../../../utils/unsubscriber/unsubscriber';
+import { Repair } from '../../interfaces';
+import { RepairStatus } from '../../enums';
+import { FormEntity } from '../../../../platform/interfaces';
+import { PhoneBrandTree, PhoneDevice } from '../../../../platform/connection/phone.interfaces';
+import { RepairRecordedSnackComponent } from '../../components/snacks/repair-recored-snack.component';
+import { EditGraphPassDialogComponent } from '../../dialogs/edit-graph-pass-dialog/edit-graph-pass-dialog.component';
+import { toDateString } from '../../../../platform/utils/functions';
 
 @Component({
    selector: 'repair-details',
@@ -23,14 +26,14 @@ import { RepairRecordedSnackComponent } from '../snacks/repair-recored-snack.com
 })
 export class RepairDetailsComponent extends Unsubscriber {
    readonly loading$ = this.phoneRootService.loading$;
-   readonly manufacturers$ = this.phoneRootService.manufacturers$;
-   readonly phoneBrandTree$ = this.phoneRootService.phoneBrandTree$;
-   readonly malfunctions$ = this.phoneRootService.malfunctions$;
+   readonly manufacturers = this.phoneRootService.manufacturers;
+   readonly malfunctions = this.phoneRootService.malfunctions;
    readonly statusOptions = Object.entries(RepairStatus).map(([key, value]) => ({ label: key, value }));
    repair: Repair;
    form = new FormGroup<FormEntity<Repair>>({
       id: new FormControl<string>('', { nonNullable: true }),
       manufacturerId: new FormControl<number| null>(null),
+      phoneNumber: new FormControl<string| null>(null),
       modelId: new FormControl<number| null>(null),
       malfunctions: new FormArray([] as AbstractControl[]),
       pass: new FormControl<string| null>(null),
@@ -45,10 +48,23 @@ export class RepairDetailsComponent extends Unsubscriber {
       status: new FormControl<RepairStatus>(RepairStatus.WaitingRepair, { nonNullable: true })
    });
 
+   readonly phoneBrandTree$ = this.form.get('manufacturerId')!.valueChanges.pipe(
+      startWith(null),
+      map((manufacturerId): PhoneDevice[] => {
+         if (!manufacturerId) {
+            return [];
+         }
+
+         return this.phoneRootService.phoneBrandTree.get(manufacturerId as number)!;
+      }),
+      shareReplay(1)
+   );
+
    constructor(private phoneRootService: PhoneRootService,
                private route: ActivatedRoute,
                private router: Router,
-               private snackBar: MatSnackBar) {
+               private snackBar: MatSnackBar,
+               private dialog: MatDialog) {
       super();
    }
 
@@ -77,8 +93,25 @@ export class RepairDetailsComponent extends Unsubscriber {
       this.router.navigate(['../']);
    }
 
+   showGraphPass(): void {
+      const dialogRef = this.dialog.open<EditGraphPassDialogComponent, number[], number[]>(EditGraphPassDialogComponent,
+         { data: this.form.get('graphPass')!.value as number[], width: '100vw' });
+
+      dialogRef.afterClosed().pipe(take(1)).subscribe((result) => {
+         if (result) {
+            console.log(result);
+            // this.subs = this.phoneRootService.updateRepair({ ...this.selectedRow!, status: result })
+            //    .subscribe(() => this.selectedRow = null);
+         }
+      });
+   }
+
    reset(): void {
       this.setupForm();
+   }
+
+   getDate(): string {
+      return this.repair ? toDateString(this.repair.createDate) : '';
    }
 
    addMalfunction(): void {
@@ -93,9 +126,10 @@ export class RepairDetailsComponent extends Unsubscriber {
       this.form.updateValueAndValidity();
 
       if (this.form.valid) {
-         this.phoneRootService.updateRepair(this.form.value as Repair);
-         this.snackBar.openFromComponent(RepairRecordedSnackComponent, {
-            duration: 2000
+         this.subs = this.phoneRootService.updateRepair(this.form.value as Repair).subscribe(() => {
+            this.snackBar.openFromComponent(RepairRecordedSnackComponent, {
+               duration: 2000
+            });
          });
       }
    }

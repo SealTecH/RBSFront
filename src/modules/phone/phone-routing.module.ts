@@ -1,14 +1,14 @@
 import { Routes, RouterModule } from '@angular/router';
 import { NgModule } from '@angular/core';
-import { PhoneRootComponent } from './phone-root/phone-root.component';
+import { PhoneDashboardComponent } from './pages/phone-dashboard/phone-dashboard.component';
 import { PhoneRoutes } from './enums';
-import { RepairComponent } from './repair/repair.component';
-import { RepairDetailsComponent } from './repair-details/repair-details.component';
+import { RepairComponent } from './pages/repair/repair.component';
+import { RepairDetailsComponent } from './pages/repair-details/repair-details.component';
 
 const routes: Routes = [
    {
       path: '',
-      component: PhoneRootComponent
+      component: PhoneDashboardComponent
    },
    {
       path: PhoneRoutes.Repair,

@@ -8,13 +8,13 @@
 .display-flex {
   display: flex;
 }
-mat-card-header, mat-card-content {
-
-}
 .selected-bg {
   background-color: $selected;
 }
 .mdc-button {
   width: 10vw;
   height: 5vh;
+}
+.page-spinner {
+  margin: auto auto;
 }

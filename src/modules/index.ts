@@ -1,1 +1,1 @@
-export { PhoneRootComponent } from './phone/phone-root/phone-root.component';
+export { PhoneDashboardComponent } from './phone/pages/phone-dashboard/phone-dashboard.component';

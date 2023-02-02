@@ -1,51 +1,66 @@
 import { Injectable } from '@angular/core';
 import {
-   BehaviorSubject, Observable, take, map, of, from, tap
+   BehaviorSubject, Observable, take, map, from, tap, shareReplay, switchMap
 } from 'rxjs';
 import {
    Firestore, collectionData, collection, docData, addDoc, deleteDoc, updateDoc
 } from '@angular/fire/firestore';
 import { doc, DocumentReference } from '@firebase/firestore';
+import { sortBy } from 'lodash-es';
 import { ConnectionService } from '../../platform';
-import { PhoneBrandTree, PhoneBrand, Malfunction } from '../../platform/connection/phone.interfaces';
+import { PhoneBrandTree, Manufacturer, Malfunction } from '../../platform/connection/phone.interfaces';
 import { Unsubscriber } from '../../utils/unsubscriber/unsubscriber';
 import { Repair } from './interfaces';
 import { Tables } from './enums';
-import { RepairConverter } from './converters/repair.converter';
+import { RepairConverter } from './converters/repairConverter';
 
 @Injectable({ providedIn: 'root' })
 export class PhoneRootService extends Unsubscriber {
    readonly repairsCollection = collection(this.firestore, Tables.Repairs).withConverter<Repair>(new RepairConverter());
    private loadingSource = new BehaviorSubject<boolean>(true);
    readonly loading$: Observable<boolean> = this.loadingSource.pipe();
-   private manufacturersSource = new BehaviorSubject<PhoneBrand[]>([]);
-   readonly manufacturers$: Observable<PhoneBrand[]> = this.manufacturersSource.pipe();
-   private PhoneBrandTreeSource = new BehaviorSubject<PhoneBrandTree>(new Map());
-   readonly phoneBrandTree$: Observable<PhoneBrandTree> = this.PhoneBrandTreeSource.pipe();
-   private malfunctionsSource = new BehaviorSubject<PhoneBrand[]>([]);
-   readonly malfunctions$: Observable<PhoneBrand[]> = this.malfunctionsSource.pipe();
-   readonly repairs$: Observable<Repair[]> = this.getAll().pipe(tap(res => console.log(res)));
-   isInitialized: boolean = false;
+
+   private _manufacturers: Manufacturer[] = [];
+   private _phoneBrandTree: PhoneBrandTree;
+   private _malfunctions: Malfunction[] = [];
+
+   readonly repairs$: Observable<Repair[]> = this.getAll().pipe(
+      map(repairs => sortBy(repairs, 'createDate')),
+      shareReplay(1),
+      tap(res => console.log(res))
+   );
+
+   private initSource = new BehaviorSubject<boolean>(false);
+   readonly isInitialized$ = this.initSource.pipe();
+
    constructor(private connectionService: ConnectionService,
                private firestore: Firestore) {
       super();
+
+      this.subs = this.connectionService.initPhones().pipe(
+         take(1),
+         tap(([manufacturers, tree, malfunctions]) => {
+            this._malfunctions = malfunctions;
+            this._manufacturers = manufacturers;
+            this._phoneBrandTree = tree;
+         }),
+         switchMap(() => this.repairs$.pipe(take(1)))
+      ).subscribe(() => {
+         this.initSource.next(true);
+         this.loadingSource.next(false);
+      });
    }
 
-   init(): Observable<[PhoneBrand[], PhoneBrandTree, Malfunction[]]> {
-      if (this.isInitialized) {
-         return of([this.manufacturersSource.value, this.PhoneBrandTreeSource.value, this.malfunctionsSource.value]);
-      }
+   get manufacturers(): Manufacturer[] {
+      return this._manufacturers;
+   }
 
-      this.isInitialized = true;
-      this.subs = this.repairs$.pipe(take(1)).subscribe(() => this.loadingSource.next(false));
+   get phoneBrandTree(): PhoneBrandTree {
+      return this._phoneBrandTree;
+   }
 
-      return this.connectionService.initPhones().pipe(take(1), map(([brands, tree, malfunctions]) => {
-         this.malfunctionsSource.next(malfunctions);
-         this.manufacturersSource.next(brands);
-         this.PhoneBrandTreeSource.next(tree);
-
-         return [brands, tree, malfunctions];
-      }));
+   get malfunctions(): Malfunction[] {
+      return this._malfunctions;
    }
 
    getAll(): Observable<Repair[]> {

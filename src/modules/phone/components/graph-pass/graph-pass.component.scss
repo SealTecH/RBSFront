@@ -1,0 +1,34 @@
+:host {
+  display: block;
+}
+
+.arrow {
+  width: 50px;
+  height: 10px;
+  background-color: red;
+  position: absolute;
+  display: block;
+}
+.arrow-container {
+  position: absolute;
+  top: 0;
+}
+
+.content-button {
+  min-width: 15vw;
+  max-width: 15vw;
+  min-height: 15vh;
+  margin: 2%;
+}
+
+.graph-pass-main-container {
+  display: flex;
+}
+.graph-pass-pass-container {
+  flex: 3;
+  position: relative;
+}
+.graph-pass-controls-container {
+  flex: 1;
+  min-width: 24vw;
+}

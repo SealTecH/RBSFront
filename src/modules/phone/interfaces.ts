@@ -9,6 +9,7 @@ export interface Repair {
   graphPass: number[];
   cost: number | null;
   imei: number | null;
+  phoneNumber: string | null;
   comments: string | null;
   createDate: number;
   customManufacturer: string | null;

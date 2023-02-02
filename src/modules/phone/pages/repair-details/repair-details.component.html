@@ -1,10 +1,11 @@
 <form [formGroup]="form" >
   <mat-card>
     <mat-card-header>
-      <mat-card-title>Repair ID:{{form.get('id')!.value}}</mat-card-title>
+      <mat-card-title>Repair ID:{{form.get('id')!.value}} <br>
+        Create Date {{ getDate() }}</mat-card-title>
     </mat-card-header>
     <mat-card-actions>
-      <button mat-raised-button class="navigation-btn" (click)="openDashboard()" > Dashboard</button>
+      <button mat-raised-button class="navigation-btn" (click)="openDashboard()"> Dashboard</button>
       <button mat-raised-button class="navigation-btn" color="warn" (click)="reset()" > Reset</button>
       <button mat-raised-button class="navigation-btn" color="primary" (click)="save()" >Save</button>
     </mat-card-actions>
@@ -19,6 +20,11 @@
         <mat-form-field class="input-control" appearance="fill">
           <mat-label>Cost</mat-label>
           <input matInput class="input-control" type="number" formControlName="cost" placeholder="Cost">
+        </mat-form-field>
+
+        <mat-form-field class="input-control" appearance="fill">
+          <mat-label>Phone Number</mat-label>
+          <input matInput class="input-control" formControlName="phoneNumber" placeholder="Phone Number">
         </mat-form-field>
 
         <mat-form-field class="select-control" appearance="fill">
@@ -53,6 +59,9 @@
         <mat-label>Password</mat-label>
         <input matInput class="input-control" type="number" formControlName="pass" placeholder="Password">
       </mat-form-field>
+      <mat-label>Graph Pass</mat-label>
+      <mat-label>{{form.get('graphPass')!.value}}</mat-label>
+      <button *ngIf="false" (click)="showGraphPass()"> Show Graph Password</button>
     </mat-card-content>
   </mat-card>
 
@@ -66,7 +75,7 @@
         <mat-form-field class="select-control" appearance="fill">
           <mat-label>Manufacturer</mat-label>
           <mat-select formControlName="manufacturerId">
-            <mat-option *ngFor="let option of manufacturers$ | async" [value]="option.id">
+            <mat-option *ngFor="let option of manufacturers" [value]="option.id">
               {{option.name}}
             </mat-option>
           </mat-select>
@@ -81,7 +90,7 @@
         <mat-form-field class="select-control" appearance="fill">
           <mat-label>Model</mat-label>
           <mat-select formControlName="modelId">
-            <mat-option *ngFor="let option of  getModelsCollection(phoneBrandTree$ | async) " [value]="option.id">
+            <mat-option *ngFor="let option of  phoneBrandTree$ | async" [value]="option.id">
               {{option.name}}
             </mat-option>
           </mat-select>
@@ -105,7 +114,7 @@
           <mat-form-field class="select-control" appearance="fill">
             <mat-label>Malfunction</mat-label>
             <mat-select [formControl]="malfunctionControl">
-              <mat-option *ngFor="let option of  malfunctions$ | async" [value]="option.id">
+              <mat-option *ngFor="let option of  malfunctions" [value]="option.id">
                 {{option.name}}
               </mat-option>
             </mat-select>
@@ -123,7 +132,5 @@
       </div>
     </mat-card-content>
   </mat-card>
-
-<!--  graphPass: new FormArray([] as AbstractControl[]),-->
 
 </form>

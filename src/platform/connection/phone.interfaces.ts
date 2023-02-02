@@ -3,7 +3,7 @@ export interface PhoneBrandRaw {
   name: string
 }
 
-export interface PhoneBrand {
+export interface Manufacturer {
   id: number;
   name: string
 }

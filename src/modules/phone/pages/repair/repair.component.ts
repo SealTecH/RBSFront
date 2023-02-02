@@ -1,15 +1,15 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import {
-   BehaviorSubject, take, map, shareReplay, combineLatest, startWith
+   BehaviorSubject, take, map, shareReplay, startWith, Observable
 } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { PhoneRootService } from '../phone-root.service';
-import { PhoneBrandTree, PhoneDevice } from '../../../platform/connection/phone.interfaces';
-import { Repair } from '../interfaces';
-import { RepairStatus } from '../enums';
-import { RepairRecordedSnackComponent } from '../snacks/repair-recored-snack.component';
+import { PhoneRootService } from '../../phone-root.service';
+import { PhoneDevice, Manufacturer } from '../../../../platform/connection/phone.interfaces';
+import { Repair } from '../../interfaces';
+import { RepairStatus } from '../../enums';
+import { RepairRecordedSnackComponent } from '../../components/snacks/repair-recored-snack.component';
 
 // eslint-disable-next-line no-shadow
 enum ProcessState {
@@ -30,19 +30,36 @@ export class RepairComponent {
    readonly passButtons = [...Array(10).keys()].slice(1);
    readonly state$ = new BehaviorSubject<ProcessState>(ProcessState.Manufacturer);
    readonly searchControl = new FormControl('');
-   readonly manufacturers$ = combineLatest([
-      this.searchControl.valueChanges.pipe(startWith('')),
-      this.phoneRootService.manufacturers$]).pipe(
-      map(([search, manufacturers]) => (!search
-         ? manufacturers : manufacturers.filter(({ name }) => name.toLowerCase().includes(search.toLowerCase())))),
-      shareReplay(1)
-   );
-
-   readonly phoneBrandTree$ = this.phoneRootService.phoneBrandTree$;
-   readonly malfunctions$ = this.phoneRootService.malfunctions$;
    selectedManufacturer: number | null = null;
    selectedModel: number | null = null;
    selectedMalfunctions: number[] = [];
+
+   readonly manufacturers$: Observable<Manufacturer[]> = this.searchControl.valueChanges.pipe(
+      startWith(''),
+      map(search => (!search
+         ? Array.from(this.phoneRootService.manufacturers.values())
+         : Array.from(this.phoneRootService.manufacturers.values())
+            .filter(({ name }) => name.toLowerCase().includes(search.toLowerCase())))),
+      shareReplay(1)
+   );
+
+   readonly models$ = this.searchControl.valueChanges.pipe(
+      startWith(''),
+      map((search): PhoneDevice[] => {
+         if (!this.selectedManufacturer) {
+            return [];
+         }
+
+         return !search
+            ? this.phoneRootService.phoneBrandTree.get(this.selectedManufacturer)!
+            : this.phoneRootService.phoneBrandTree.get(this.selectedManufacturer)!
+               .filter(({ name }) => name.toLowerCase().includes(search.toLowerCase()));
+      }),
+      map(devices => devices!.slice(0, this.searchControl.value ? 20 : 50)),
+      shareReplay(1)
+   );
+
+   readonly malfunctions = this.phoneRootService.malfunctions;
    graphPass: number[] = [];
 
    customManufacturer: string | null = null;
@@ -51,6 +68,7 @@ export class RepairComponent {
 
    readonly passwordControl = new FormControl('');
    readonly costControl = new FormControl<number | null>(null);
+   readonly phoneNumberControl = new FormControl<string | null>(null);
    readonly commentsControl = new FormControl('');
    readonly imeiControl = new FormControl<number | null>(null);
    constructor(private phoneRootService: PhoneRootService,
@@ -58,18 +76,6 @@ export class RepairComponent {
                private cd: ChangeDetectorRef,
                private snackBar: MatSnackBar) {
 
-   }
-
-   getModelsCollection(tree: PhoneBrandTree): PhoneDevice[] {
-      if (!this.selectedManufacturer) {
-         return [];
-      }
-
-      const devices = tree.get(this.selectedManufacturer!)!;
-
-      return !this.searchControl.value
-         ? devices.slice(0, 50)
-         : devices.filter(device => device.name.toLowerCase().includes(this.searchControl.value!.toLowerCase())).slice(0, 20);
    }
 
    selectManufacturer(id: number): void {
@@ -118,6 +124,7 @@ export class RepairComponent {
          graphPass: this.graphPass,
          cost: this.costControl.value,
          comments: this.commentsControl.value,
+         phoneNumber: this.phoneNumberControl.value,
          imei: this.imeiControl.value,
          createDate: new Date().getTime(),
          customManufacturer: this.customManufacturer,
@@ -126,10 +133,11 @@ export class RepairComponent {
          status: RepairStatus.WaitingRepair
       };
 
-      this.phoneRootService.createRepair(repair);
-      this.cancelRepair();
-      this.snackBar.openFromComponent(RepairRecordedSnackComponent, {
-         duration: 2000
+      this.phoneRootService.createRepair(repair).subscribe(() => {
+         this.cancelRepair();
+         this.snackBar.openFromComponent(RepairRecordedSnackComponent, {
+            duration: 2000
+         });
       });
    }
 
@@ -140,6 +148,11 @@ export class RepairComponent {
       this.selectedMalfunctions = [];
       this.graphPass = [];
       this.searchControl.setValue(null);
+      this.costControl.setValue(null);
+      this.imeiControl.setValue(null);
+      this.commentsControl.setValue(null);
+      this.phoneNumberControl.setValue(null);
+      this.passwordControl.setValue(null);
    }
 
    toPreviousState(): void {

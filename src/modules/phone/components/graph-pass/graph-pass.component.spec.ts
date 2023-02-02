@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PhoneRootComponent } from './phone-root.component';
+import { GraphPassComponent } from './graph-pass.component';
 
-describe('PhoneRootComponent', () => {
-  let component: PhoneRootComponent;
-  let fixture: ComponentFixture<PhoneRootComponent>;
+describe('GraphPassComponent', () => {
+  let component: GraphPassComponent;
+  let fixture: ComponentFixture<GraphPassComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PhoneRootComponent ]
+      declarations: [ GraphPassComponent ]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(PhoneRootComponent);
+    fixture = TestBed.createComponent(GraphPassComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

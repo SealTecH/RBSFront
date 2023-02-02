@@ -24,7 +24,7 @@
 
   <!--  start Model layout-->
   <div *ngSwitchCase="ProcessState.Model">
-    <button mat-raised-button class="content-button" *ngFor="let model of getModelsCollection(phoneBrandTree$ | async)"
+    <button mat-raised-button class="content-button" *ngFor="let model of models$ | async"
             [class.active]="model.id===selectedModel"
             (click)="selectModel(model.id)">
       {{ model.name}}
@@ -36,7 +36,7 @@
 
   <!--  start Malfunction layout-->
   <div *ngSwitchCase="ProcessState.Malfunction">
-    <button mat-raised-button class="content-button" *ngFor="let malfunction of malfunctions$| async"
+    <button mat-raised-button class="content-button" *ngFor="let malfunction of malfunctions"
             [class.active]="selectedMalfunctions.includes(malfunction.id)"
             (click)="selectMalfunction(malfunction.id)">
       {{ malfunction.name}}
@@ -51,9 +51,9 @@
   <!--  start Pass layout-->
   <div *ngSwitchCase="ProcessState.Pass">
     <div>
-      <mat-form-field class="pass-field" appearance="fill">
+      <mat-form-field class="input-field" appearance="fill">
         <mat-label>Non-graph Password</mat-label>
-        <input matInput class="pass-field" [formControl]="passwordControl" placeholder="password">
+        <input matInput class="input-field" [formControl]="passwordControl" placeholder="password">
       </mat-form-field>
     </div>
     <div class="graph-pass-main-container">
@@ -81,19 +81,24 @@
   <div *ngSwitchCase="ProcessState.Final">
     <div class="display-flex">
       <div>
-        <mat-form-field class="pass-field" appearance="fill">
+        <mat-form-field class="input-field" appearance="fill">
           <mat-label>Cost</mat-label>
-          <input matInput class="pass-field" type="number" [formControl]="costControl" placeholder="Cost">
+          <input matInput class="input-field" type="number" [formControl]="costControl" placeholder="Cost">
         </mat-form-field>
 
-        <mat-form-field class="pass-field" appearance="fill">
+        <mat-form-field class="input-field" appearance="fill">
+          <mat-label>Phone Number</mat-label>
+          <input  matInput class="input-field" [formControl]="phoneNumberControl" placeholder="Phone Number">
+        </mat-form-field>
+
+        <mat-form-field class="input-field" appearance="fill">
           <mat-label>Comments</mat-label>
-          <textarea  matInput class="pass-field" type="number" [formControl]="commentsControl" placeholder="Comments"></textarea>
+          <input  matInput class="input-field" [formControl]="commentsControl" placeholder="Comments">
         </mat-form-field>
 
-        <mat-form-field class="pass-field" appearance="fill">
+        <mat-form-field class="input-field" appearance="fill">
           <mat-label>IMEI</mat-label>
-          <textarea  matInput class="pass-field" type="number" [formControl]="imeiControl" placeholder="IMEI"></textarea>
+          <textarea  matInput class="input-field" type="number" [formControl]="imeiControl" placeholder="IMEI"></textarea>
         </mat-form-field>
       </div>
       <div>

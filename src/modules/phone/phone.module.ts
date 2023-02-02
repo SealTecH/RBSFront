@@ -15,25 +15,29 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
-import { PhoneRootComponent } from './phone-root/phone-root.component';
-import { RepairComponent } from './repair/repair.component';
+import { PhoneDashboardComponent } from './pages/phone-dashboard/phone-dashboard.component';
+import { RepairComponent } from './pages/repair/repair.component';
 import { PhoneRoutingModule } from './phone-routing.module';
 import { PhoneRootService } from './phone-root.service';
-import { RepairRecordedSnackComponent } from './snacks/repair-recored-snack.component';
-import { RepairDetailsComponent } from './repair-details/repair-details.component';
+import { RepairRecordedSnackComponent } from './components/snacks/repair-recored-snack.component';
+import { RepairDetailsComponent } from './pages/repair-details/repair-details.component';
+import { GraphPassComponent } from './components/graph-pass/graph-pass.component';
+import { EditGraphPassDialogComponent } from './dialogs/edit-graph-pass-dialog/edit-graph-pass-dialog.component';
 
 @NgModule({
    declarations: [
-      PhoneRootComponent,
+      PhoneDashboardComponent,
       RepairComponent,
       RepairRecordedSnackComponent,
-      RepairDetailsComponent
+      RepairDetailsComponent,
+      GraphPassComponent,
+      EditGraphPassDialogComponent
    ],
    providers: [
       PhoneRootService
    ],
    exports: [
-      PhoneRootComponent
+      PhoneDashboardComponent
    ],
    imports: [
       AngularFirestoreModule,
