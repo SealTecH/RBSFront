@@ -38,5 +38,13 @@
  &.ready, .ready:hover {
     background-color: $color-ready;
   }
+
+ &.inProgress, .inProgress:hover {
+    background-color: $color-progress;
+  }
+}
+.filters-container {
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 

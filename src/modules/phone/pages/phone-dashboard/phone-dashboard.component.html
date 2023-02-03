@@ -1,5 +1,5 @@
-<mat-spinner class="page-spinner" *ngIf="loading$ | async;else repair"></mat-spinner>
-<ng-template #repair>
+<mat-spinner class="page-spinner" *ngIf="loading$ | async"></mat-spinner>
+<ng-container *ngIf="(loading$ | async)===false">
   <div>
     <mat-form-field appearance="fill" class="search-control">
       <mat-label>Search</mat-label>
@@ -7,12 +7,10 @@
     </mat-form-field>
     <button mat-raised-button class="navigation-btn" color="warn" [disabled]="!searchControl.value" (click)="clearSearch()"> Clear </button>
   </div>
- <div class="btn-container">
-   <button  mat-raised-button class="content-button" (click)="createNewRepair()">New Repair</button>
-   <button mat-raised-button class="content-button" color="warn" [disabled]="selectedRow===null" (click)="deleteRow()">Delete</button>
-   <button mat-raised-button class="content-button" [disabled]="selectedRow===null" (click)="goToDetails()">Details</button>
-   <button mat-raised-button class="content-button" [disabled]="selectedRow===null" (click)="changeStatus()">Change Status</button>
- </div>
+  <ng-container [ngTemplateOutlet]="(mobileMode$| async) ? table: slider" [ngTemplateOutletContext]="{ repair: carouselItem$| async}"></ng-container>
+</ng-container>
+<ng-template #table>
+  <ng-container [ngTemplateOutlet]="buttonsContainer"></ng-container>
   <div>
     <table mat-table [dataSource]="repairsFiltered$ | async" class="mat-elevation-z8">
 
@@ -27,7 +25,7 @@
 
       <ng-container matColumnDef="malfunction">
         <th mat-header-cell *matHeaderCellDef> Malfunction </th>
-        <td mat-cell *matCellDef="let repair"> {{ repair.malfunctions }} </td>
+        <td mat-cell *matCellDef="let repair"> {{ repair.malfunction }} </td>
       </ng-container>
 
       <ng-container matColumnDef="cost">
@@ -61,6 +59,7 @@
       <tr mat-header-row *matHeaderRowDef="columns"></tr>
       <tr mat-row [class.selected]="row.id===selectedRow?.id"
           [class.ready]="row.status===RepairStatus.Done && row.id!==selectedRow?.id"
+          [class.inProgress]="row.status===RepairStatus.InProgress && row.id!==selectedRow?.id"
           *matRowDef="let row; columns: columns;" (click)="selectRow(row)" ></tr>
 
       <mat-paginator [pageSizeOptions]="[5, 10, 20]"
@@ -70,4 +69,43 @@
     </table>
   </div>
 
+</ng-template>
+
+<ng-template #slider let-repair="repair">
+  <ng-container [ngTemplateOutlet]="buttonsContainer" [ngTemplateOutletContext]="{repair: repair}"></ng-container>
+  <div *ngIf="repair">
+    <mat-card (swipeleft)="showNextRepair()" (swiperight)="showPrevRepair()">
+      <mat-card-header>
+        <mat-card-title>
+          <p> Create Date: {{ getDate(repair.createDate) }}</p>
+          <p> Cost: {{repair.cost}}</p>
+          <p> Status: {{repair.status}} </p>
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>{{ repair.manufacturer }}</p>
+        <p>{{ repair.model }}</p>
+        <p>{{ repair.phoneNumber }}</p>
+        <p>{{repair.malfunction}}</p>
+        <p> {{ repair.comments }}</p>
+        <p> Repair ID:{{repair.id}}</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</ng-template>
+
+<ng-template #buttonsContainer let-repair="repair">
+  <div class="btn-container">
+    <button  mat-raised-button class="content-button" (click)="createNewRepair()">New Repair</button>
+    <button mat-raised-button class="content-button" color="warn" [disabled]="selectedRow===null && !repair" (click)="deleteRow(repair)">Delete</button>
+    <button mat-raised-button class="content-button" [disabled]="selectedRow===null && !repair" (click)="goToDetails(repair)">Details</button>
+    <button mat-raised-button class="content-button" [disabled]="selectedRow===null && !repair" (click)="changeStatus(repair)">Change Status</button>
+  </div>
+  <div class="filters-container">
+    <mat-card>
+      <mat-card-content>
+        <mat-slide-toggle [formControl]="hideDoneControl">Hide Done Repairs</mat-slide-toggle>
+      </mat-card-content>
+    </mat-card>
+  </div>
 </ng-template>

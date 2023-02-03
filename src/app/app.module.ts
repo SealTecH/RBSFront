@@ -1,5 +1,7 @@
-import { NgModule, isDevMode } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
+import { NgModule, isDevMode, Injectable } from '@angular/core';
+import {
+   BrowserModule, HammerModule, HammerGestureConfig, HAMMER_GESTURE_CONFIG
+} from '@angular/platform-browser';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -13,17 +15,27 @@ import { provideDatabase, getDatabase } from '@angular/fire/database';
 import { provideMessaging, getMessaging } from '@angular/fire/messaging';
 import { provideStorage, getStorage } from '@angular/fire/storage';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
+import { LayoutModule } from '@angular/cdk/layout';
+import * as Hammer from 'hammerjs';
 import { environment } from '../environments/environment';
 import { ConnectionService } from '../platform';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
+@Injectable()
+export class MyHammerConfig extends HammerGestureConfig {
+   overrides = <any> {
+      swipe: { direction: Hammer.DIRECTION_ALL }
+   };
+}
 @NgModule({
    declarations: [
       AppComponent
    ],
    imports: [
       BrowserModule,
+      LayoutModule,
+      HammerModule,
       BrowserAnimationsModule,
       HttpClientModule,
       AppRoutingModule,
@@ -42,7 +54,13 @@ import { AppComponent } from './app.component';
       provideStorage(() => getStorage()),
       provideFirestore(() => getFirestore())
    ],
-   providers: [ConnectionService, ScreenTrackingService, UserTrackingService],
+   providers: [ConnectionService,
+      ScreenTrackingService,
+      UserTrackingService,
+      {
+         provide: HAMMER_GESTURE_CONFIG,
+         useClass: MyHammerConfig
+      }],
    bootstrap: [AppComponent]
 })
 export class AppModule { }

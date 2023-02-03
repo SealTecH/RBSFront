@@ -25,7 +25,7 @@ export class PhoneRootService extends Unsubscriber {
    private _malfunctions: Malfunction[] = [];
 
    readonly repairs$: Observable<Repair[]> = this.getAll().pipe(
-      map(repairs => sortBy(repairs, 'createDate')),
+      map(repairs => sortBy(repairs, 'createDate').reverse()),
       shareReplay(1),
       tap(res => console.log(res))
    );
