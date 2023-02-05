@@ -180,7 +180,6 @@ export class RepairComponent {
          case ProcessState.Malfunction:
             this.state$.next(ProcessState.Pass);
             this.customMalfunction = this.searchControl.value;
-            this.selectedMalfunctions = [];
             break;
          case ProcessState.Pass:
             this.state$.next(ProcessState.Final);

@@ -11,7 +11,7 @@ import { ConnectionService } from '../../platform';
 import { PhoneBrandTree, Manufacturer, Malfunction } from '../../platform/connection/phone.interfaces';
 import { Unsubscriber } from '../../utils/unsubscriber/unsubscriber';
 import { Repair } from './interfaces';
-import { Tables } from './enums';
+import { Tables, RepairStatus } from './enums';
 import { RepairConverter } from './converters/repairConverter';
 
 @Injectable({ providedIn: 'root' })
@@ -84,10 +84,28 @@ export class PhoneRootService extends Unsubscriber {
    }
 
    deleteRepair(id: string): Observable<void> {
-      return from(deleteDoc(doc(this.firestore, `${Tables.Repairs}/${id}`)));
+      return from(deleteDoc(doc(this.firestore, `${Tables.Repairs}/${id}`))).pipe(tap(() => this.loadingSource.next(false)));
    }
 
    getRepairById(id: string): Observable<Repair> {
       return docData(doc(this.firestore, `${Tables.Repairs}/${id}`), { idField: 'id' }) as Observable<Repair>;
+   }
+
+   duplicateRepair(repairId: string): Observable<DocumentReference<Repair>> {
+      this.loadingSource.next(true);
+
+      return this.repairs$.pipe(
+         take(1),
+         switchMap((repairs) => {
+            const repairToCopy: Repair = {
+               ...repairs.find(({ id }) => id === repairId)!,
+               createDate: new Date().getTime(),
+               status: RepairStatus.WaitingRepair,
+               id: ''
+            };
+
+            return this.createRepair(repairToCopy);
+         })
+      );
    }
 }

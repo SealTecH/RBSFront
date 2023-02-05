@@ -1,4 +1,8 @@
 @import "../../../../styles/colors";
+@import "../../../../styles/mixins";
+
+@include contentButtons;
+
 :host {
   display: block;
 }
@@ -20,27 +24,32 @@
   min-width: 30vw;
   margin-right: 10px;
 }
-.content-button {
-  min-width: 20vw;
-  max-width: 20vw;
-  min-height: 20vh;
-  margin: 2%;
-}
+
 .btn-container {
   display: flex;
-  justify-content: space-between;
+}
+.main-btn-container {
+  margin-right: 1%;
+}
+.small-btns-container {
+  display: flex;
   flex-wrap: wrap;
 }
+
 .mat-mdc-table .mat-mdc-row {
   &.selected {
-    background-color: $selected;
+    background-color: $color-selected;
   }
- &.ready, .ready:hover {
+ &.Done, .Done:hover {
     background-color: $color-ready;
   }
 
- &.inProgress, .inProgress:hover {
+ &.InProgress, .InProgress:hover {
     background-color: $color-progress;
+  }
+
+  &.WaitingResolution, .WaitingResolution:hover {
+    background-color: $color-resolution;
   }
 }
 .filters-container {

@@ -1,11 +1,11 @@
 <mat-spinner class="page-spinner" *ngIf="loading$ | async"></mat-spinner>
 <ng-container *ngIf="(loading$ | async)===false">
-  <div>
+  <div class="display-flex">
     <mat-form-field appearance="fill" class="search-control">
       <mat-label>Search</mat-label>
       <input matInput class="search-control" [formControl]="searchControl" placeholder="search">
     </mat-form-field>
-    <button mat-raised-button class="navigation-btn" color="warn" [disabled]="!searchControl.value" (click)="clearSearch()"> Clear </button>
+    <button mat-raised-button class="small-content-button" color="warn" [disabled]="!searchControl.value" (click)="clearSearch()"> Clear </button>
   </div>
   <ng-container [ngTemplateOutlet]="(mobileMode$| async) ? table: slider" [ngTemplateOutletContext]="{ repair: carouselItem$| async}"></ng-container>
 </ng-container>
@@ -57,9 +57,7 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="columns"></tr>
-      <tr mat-row [class.selected]="row.id===selectedRow?.id"
-          [class.ready]="row.status===RepairStatus.Done && row.id!==selectedRow?.id"
-          [class.inProgress]="row.status===RepairStatus.InProgress && row.id!==selectedRow?.id"
+      <tr mat-row [ngClass]="row.id!==selectedRow?.id ? row.status.toString() : 'selected'"
           *matRowDef="let row; columns: columns;" (click)="selectRow(row)" ></tr>
 
       <mat-paginator [pageSizeOptions]="[5, 10, 20]"
@@ -96,10 +94,15 @@
 
 <ng-template #buttonsContainer let-repair="repair">
   <div class="btn-container">
-    <button  mat-raised-button class="content-button" (click)="createNewRepair()">New Repair</button>
-    <button mat-raised-button class="content-button" color="warn" [disabled]="selectedRow===null && !repair" (click)="deleteRow(repair)">Delete</button>
-    <button mat-raised-button class="content-button" [disabled]="selectedRow===null && !repair" (click)="goToDetails(repair)">Details</button>
-    <button mat-raised-button class="content-button" [disabled]="selectedRow===null && !repair" (click)="changeStatus(repair)">Change Status</button>
+    <div class="main-btn-container">
+      <button  mat-raised-button class="content-button" (click)="createNewRepair()">New Repair</button>
+    </div>
+    <div class="small-btns-container">
+      <button mat-raised-button class="small-content-button" color="warn" [disabled]="selectedRow===null && !repair" (click)="deleteRow(repair)">Delete</button>
+      <button mat-raised-button class="small-content-button" [disabled]="selectedRow===null && !repair" (click)="goToDetails(repair)">Details</button>
+      <button mat-raised-button class="small-content-button" [disabled]="selectedRow===null && !repair" (click)="changeStatus(repair)">Change Status</button>
+      <button mat-raised-button class="small-content-button" [disabled]="selectedRow===null && !repair" (click)="duplicateRepair(repair?.id)">Duplicate</button>
+    </div>
   </div>
   <div class="filters-container">
     <mat-card>

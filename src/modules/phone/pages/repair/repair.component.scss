@@ -1,3 +1,13 @@
+@import "../../../../styles/colors";
+@import "../../../../styles/mixins";
+
+@include contentButtons;
+
+.manufacturer-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
 .search-control {
   font-size: 2rem;
   min-height: 5vh;
@@ -7,18 +17,12 @@
   min-height: 50px;
   margin: 10px;
 }
-.content-button {
-  min-width: 20vw;
-  max-width: 20vw;
-  min-height: 20vh;
-  margin: 2%;
-}
 
 .active {
-  background-color: #081F;
+  background-color: $color-ready;
 }
 .next-step-button {
-  background-color: #1FBBBB;
+  background-color: $color-selected;
 }
 .graph-pass-main-container {
   display: flex;

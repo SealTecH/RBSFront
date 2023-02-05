@@ -1,3 +1,7 @@
+@import "../../../../styles/mixins";
+
+@include contentButtons;
+
 .input-control, .select-control {
   min-width: 20vw;
   font-size: 2rem;

@@ -5,7 +5,7 @@ import {
    PhoneBrandTree, Malfunction, PhoneDeviceRaw, Manufacturer, PhoneBrandRaw
 } from './phone.interfaces';
 
-const ALLOWED_MANUFACTURERS_IDS = [4, 80, 57, 82, 95, 44, 45, 106, 74, 72, 73, 62, 6, 7, 1, 110, 114];
+const ALLOWED_MANUFACTURERS_IDS = [4, 80, 57, 82, 95, 44, 45, 106, 74, 72, 73, 62, 6, 7, 1, 110, 114, 999];
 
 @Injectable({
    providedIn: 'root'
@@ -18,10 +18,11 @@ export class ConnectionService {
       return forkJoin([
          this.http.get<{RECORDS: PhoneBrandRaw[]}>('./assets/brands.json'),
          this.http.get<PhoneDeviceRaw[]>('./assets/devices.onlyNeededBrands.2012.json'),
-         this.http.get<Malfunction[]>('./assets/malfunctions.json')
+         this.http.get<Malfunction[]>('./assets/malfunctions.json'),
+         this.http.get<PhoneDeviceRaw[]>('./assets/iphone.json')
       ]).pipe(
-         map(([{ RECORDS: brands }, devices, malfunctions]:
-                [{RECORDS: PhoneBrandRaw[]}, PhoneDeviceRaw[], Malfunction[]]) => {
+         map(([{ RECORDS: brands }, devices, malfunctions, iPhones]:
+                [{RECORDS: PhoneBrandRaw[]}, PhoneDeviceRaw[], Malfunction[], PhoneDeviceRaw[]]) => {
             const outputTree: PhoneBrandTree = new Map();
 
             const outputBrands: Manufacturer[] = brands
@@ -30,7 +31,7 @@ export class ConnectionService {
                .map((brand) => {
                   const brandId = Number(brand.id);
                   const devicesList = devices.filter(device => device.brandId === brandId)
-                     .reverse().map(device => ({ ...device, id: Number(device.id), brandId }));
+                     .reverse().map(device => ({ ...device, id: device.id, brandId }));
 
                   if (devicesList.length) {
                      outputTree.set(
@@ -39,8 +40,11 @@ export class ConnectionService {
                      );
                   }
 
-                  return { id: devicesList.length ? Number(brand.id) : null, name: brand.name };
-               }).filter(brand => !!brand.id) as Manufacturer[];
+                  return { id: Number(brand.id), name: brand.name };
+               }) as Manufacturer[];
+
+            // add iphones
+            outputTree.set(999, iPhones.reverse());
 
             return [outputBrands, outputTree, malfunctions];
          })

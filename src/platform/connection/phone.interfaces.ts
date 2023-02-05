@@ -9,18 +9,20 @@ export interface Manufacturer {
 }
 
 export interface PhoneDeviceRaw {
-  id: string;
+  id: number;
   brandId: number;
   name: string;
-  picture: string;
-  released: number
+  picture?: string;
+  released?: number;
+  aNumber?: string;
 }
 
 export interface PhoneDevice {
   id: number;
   brandId: number;
   name: string;
-  picture: string;
+  picture?: string;
+  aNumber?: string;
 }
 
 export interface Malfunction {

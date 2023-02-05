@@ -1,15 +1,15 @@
 <div>
-  <button mat-raised-button class="navigation-btn" (click)="openDashboard()" > Dashboard</button>
-  <button mat-raised-button class="navigation-btn" color="warn" (click)="cancelRepair()" > Cancel</button>
-  <button mat-raised-button class="navigation-btn" [disabled]="(state$ | async) < 1" (click)="toPreviousState()" > << Prev</button>
-  <button mat-raised-button class="navigation-btn" [disabled]="(state$ | async) > 3" (click)="toNextState()"> Skip >></button>
-  <ng-container *ngIf="(state$ | async) < 3">
+  <button mat-raised-button class="small-content-button" (click)="openDashboard()">Back</button>
+  <button mat-raised-button class="small-content-button" color="warn" (click)="cancelRepair()" >Cancel</button>
+  <button mat-raised-button class="small-content-button" [disabled]="(state$ | async) < 1" (click)="toPreviousState()"> << <br>Prev</button>
+  <button mat-raised-button class="small-content-button" [disabled]="(state$ | async) > 3" (click)="toNextState()"> >> <br>Skip</button>
+  <div class="display-flex" *ngIf="(state$ | async) < 3">
     <mat-form-field appearance="fill" class="search-control">
       <mat-label>Search/Custom</mat-label>
       <input matInput class="search-control" [formControl]="searchControl" placeholder="search or type custom value">
     </mat-form-field>
-    <button mat-raised-button class="navigation-btn" color="primary" [disabled]="!searchControl.value" (click)="toNextState()"> SET CUSTOM </button>
-  </ng-container>
+    <button mat-raised-button class="small-content-button" color="primary" [disabled]="!searchControl.value" (click)="toNextState()"> SET CUSTOM </button>
+  </div>
 </div>
 <div [ngSwitch]="state$ | async">
   <!--  start Manufacturer layout-->
@@ -29,7 +29,8 @@
             (click)="selectModel(model.id)">
       {{ model.name}}
       <br>
-      <img [src]="model.picture" width="75" height="75">
+      <span *ngIf="model.aNumber">{{model.aNumber}}<br></span>
+      <img *ngIf="model.picture" [src]="model.picture" width="75" height="75">
     </button>
     <!--  end Model layout-->
   </div>

@@ -110,6 +110,9 @@
     </mat-card-header>
     <mat-card-content>
       <div class="malfunction-container">
+        <ng-container *ngIf="getMalfunctionsControl().controls.length < 1">
+          <button mat-raised-button class="malfunction-btn" (click)="addMalfunction()" > + </button>
+        </ng-container>
         <div class="display-flex" *ngFor="let malfunctionControl of getMalfunctionsControl().controls; let isLast = last; let i = index">
           <mat-form-field class="select-control" appearance="fill">
             <mat-label>Malfunction</mat-label>
@@ -122,12 +125,12 @@
               Field is required! Fill or remove it
             </mat-error>
           </mat-form-field>
-          <button mat-raised-button class="malfunction-btn" color="warn" (click)="removeMalfunction()" > - </button>
+          <button mat-raised-button class="malfunction-btn" color="warn" (click)="removeMalfunction(i)" > - </button>
           <button mat-raised-button class="malfunction-btn" *ngIf="isLast" (click)="addMalfunction()" > + </button>
         </div>
         <mat-form-field class="input-control" appearance="fill">
           <mat-label>Custom malfunction</mat-label>
-          <input matInput class="input-control" type="number" formControlName="customMalfunction" placeholder="Custom malfunction">
+          <input matInput class="input-control" formControlName="customMalfunction" placeholder="Custom malfunction">
         </mat-form-field>
       </div>
     </mat-card-content>

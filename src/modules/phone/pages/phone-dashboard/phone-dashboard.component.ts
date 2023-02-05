@@ -166,6 +166,10 @@ export class PhoneDashboardComponent extends Unsubscriber {
       });
    }
 
+   duplicateRepair(id?: string): void {
+      this.phoneRootService.duplicateRepair(id || this.selectedRow!.id).subscribe();
+   }
+
    private normalizeRepairs(repairs: Repair[]): DashboardRepair[] {
       return repairs.map(repair => ({
          ...repair,
@@ -175,7 +179,8 @@ export class PhoneDashboardComponent extends Unsubscriber {
             ? this.phoneRootService.phoneBrandTree.get(repair.manufacturerId!)!.find(model => model.id === repair.modelId)!.name
             : repair.customModel,
          malfunction: repair.malfunctions.length
-            ? repair.malfunctions.map(malfunction => this.phoneRootService.malfunctions.find(m => malfunction === m.id)!.name).join(', ')
+            ? repair.malfunctions.map(malfunction => this.phoneRootService.malfunctions.find(m => malfunction === m.id)!.name)
+               .join(', ').concat(repair.customMalfunction ? `, ${repair.customMalfunction}` : '')
             : repair.customMalfunction
       }));
    }
