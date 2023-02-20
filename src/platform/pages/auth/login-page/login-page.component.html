@@ -1,0 +1,32 @@
+<mat-spinner *ngIf="loading$ | async; else loginForm"></mat-spinner>
+<ng-template #loginForm >
+  <form  [formGroup]="form">
+    <div>
+      <mat-form-field appearance="fill" class="search-control">
+        <mat-label>Email</mat-label>
+        <input matInput class="search-control" formControlName="email" placeholder="email">
+        <mat-error *ngIf="form.get('email').hasError('required')">
+          Field is required!
+        </mat-error>
+        <mat-error *ngIf="form.get('email').hasError('email')">
+          Email is invalid!
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div>
+      <mat-form-field appearance="fill" class="search-control">
+        <mat-label>Password</mat-label>
+        <input matInput class="search-control" formControlName="password" placeholder="password" type="password">
+        <mat-error *ngIf="form.get('password').hasError('required')">
+          Field is required!
+        </mat-error>
+      </mat-form-field>
+    </div>
+    <div>
+      <button mat-raised-button color="warn"> Forgot Password </button>
+      <button mat-raised-button color="primary" (click)="login()"> Login </button>
+    </div>
+  </form>
+
+</ng-template>

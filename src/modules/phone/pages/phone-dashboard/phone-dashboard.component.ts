@@ -1,15 +1,16 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import {
+   Component, ChangeDetectionStrategy, OnInit, ViewChildren, QueryList
+} from '@angular/core';
 import { Router } from '@angular/router';
 import {
-   take, map, startWith, combineLatest, shareReplay, tap, BehaviorSubject
+   take, map, combineLatest, tap, BehaviorSubject
 } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { FormControl } from '@angular/forms';
-import { BreakpointObserver } from '@angular/cdk/layout';
-import { omit } from 'lodash-es';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
 import { PhoneRoutes, RepairStatus } from '../../enums';
 import { Unsubscriber } from '../../../../utils/unsubscriber/unsubscriber';
-import { PhoneBrandTree } from '../../../../platform/connection/phone.interfaces';
 import {
    ConfirmDialogComponent,
    ConfirmDialogData
@@ -18,135 +19,120 @@ import {
    SelectActionDialogComponent,
    SelectActionDialogData
 } from '../../../../platform/dialogs/select-action-dialog/select-action-dialog.component';
-import { Repair } from '../../interfaces';
-import { PhoneRootService } from '../../phone-root.service';
+import { Repair, PhoneBrandTree } from '../../interfaces';
 import { toDateString } from '../../../../platform/utils/functions';
-
-interface DashboardRepair extends Repair {
-  manufacturer: string | null;
-  model: string | null;
-  malfunction: string | null;
-}
+import { ResolutionService } from '../../../../platform/services/resolution/resolution.service';
+import { PhoneDashboardService, DashboardRepair } from './phone-dashboard.service';
 
 @Component({
    selector: 'phone-dashboard',
    templateUrl: './phone-dashboard.component.html',
    styleUrls: ['./phone-dashboard.component.scss'],
-   changeDetection: ChangeDetectionStrategy.OnPush
+   changeDetection: ChangeDetectionStrategy.OnPush,
+   providers: [PhoneDashboardService]
 })
-export class PhoneDashboardComponent extends Unsubscriber {
-   readonly RepairStatus = RepairStatus;
+export class PhoneDashboardComponent extends Unsubscriber implements OnInit {
    readonly columns = ['model', 'malfunction', 'cost', 'created', 'comments', 'status'];
-   readonly loading$ = this.phoneRootService.loading$;
+   readonly loading$ = this.service.loading$;
    readonly searchControl = new FormControl('');
    readonly hideDoneControl = new FormControl<boolean>(true);
-   readonly mobileMode$ = this.breakpointObserver.observe(['(min-width: 600px)']).pipe(
-      map(state => state.matches)
-   );
+   readonly pcMode$ = this.resolutionService.pcMode$;
+   readonly dataSource = new MatTableDataSource<DashboardRepair>([]);
 
-   readonly repairsFiltered$ = combineLatest([
-      this.searchControl.valueChanges.pipe(startWith('')),
-      this.hideDoneControl.valueChanges.pipe(startWith(this.hideDoneControl.value)),
-      this.phoneRootService.repairs$.pipe(map(repairs => this.normalizeRepairs(repairs)))
-   ]).pipe(
-      map(([search, hideDone, repairs]): [string| null, DashboardRepair[]] => {
-         if (hideDone) {
-            return [search, repairs.filter(repair => repair.status !== RepairStatus.Done)];
-         }
+  @ViewChildren(MatPaginator) paginator: QueryList<MatPaginator>;
 
-         return [search, repairs];
-      }),
-      map(([search, repairs]) => {
-         if (!search) {
-            return repairs;
-         }
+  carouselIndex$ = new BehaviorSubject<number>(0);
+  carouselItem$ = combineLatest([this.service.data$, this.carouselIndex$]).pipe(map(([repairs, index]) => repairs[index]));
 
-         const searchValue = search.toLowerCase().trim();
-
-         return repairs.filter(repair => repair.manufacturer?.toLowerCase().includes(searchValue)
-           || repair.model?.toLowerCase().includes(searchValue)
-           || repair.malfunction?.toLowerCase().includes(searchValue)
-            || repair.comments?.toLowerCase().includes(searchValue)
-            || repair.phoneNumber?.toLowerCase().includes(searchValue)
-            || repair.imei?.toString().includes(searchValue));
-      }),
-      tap((repairs) => {
-         if (this.selectedRow && !repairs.some(({ id }) => id === this.selectedRow!.id)) {
-            this.selectedRow = null;
-         }
-      }),
-      shareReplay(1)
-   );
-
-   carouselIndex$ = new BehaviorSubject<number>(0);
-   carouselItem$ = combineLatest([this.repairsFiltered$, this.carouselIndex$]).pipe(map(([repairs, index]) => repairs[index]));
-
-   selectedRow: Repair | null = null;
-   constructor(private router: Router,
-               private phoneRootService: PhoneRootService,
+  selectedRow: DashboardRepair | null = null;
+  constructor(private router: Router,
+               private service: PhoneDashboardService,
                private dialog: MatDialog,
-               public breakpointObserver: BreakpointObserver) {
-      super();
-   }
+               private resolutionService: ResolutionService) {
+     super();
+  }
 
-   createNewRepair(): void {
-      this.router.navigate([PhoneRoutes.Repair]);
-   }
+  ngOnInit(): void {
+     this.service.init(this.searchControl, this.hideDoneControl);
+     this.subs = this.service.data$.pipe(
+        tap((repairs) => {
+           if (this.selectedRow && !repairs.some(({ id }) => id === this.selectedRow!.id)) {
+              this.selectedRow = null;
+           }
+        })
+     ).subscribe((repairs) => {
+        this.dataSource.data = repairs;
+     });
+     this.subs = this.hideDoneControl.valueChanges.subscribe(() => {
+        if (this.paginator.first) {
+           this.paginator.first.firstPage();
+        }
+     });
+  }
 
-   goToDetails(repair?: Repair): void {
-      this.router.navigate([PhoneRoutes.Repair, repair?.id || this.selectedRow!.id]);
-   }
+  ngAfterViewInit(): void {
+     this.dataSource.paginator = this.paginator.first;
+     this.subs = this.paginator.changes.subscribe(() => {
+        this.dataSource.paginator = this.paginator.first;
+     });
+  }
 
-   clearSearch(): void {
-      this.searchControl.setValue('');
-   }
+  createNewRepair(): void {
+     this.router.navigate([PhoneRoutes.Repair]);
+  }
 
-   getModel(tree: PhoneBrandTree, brandId: number, id: number): string | undefined {
-      return tree.get(brandId)?.find(device => device.id === id)?.name;
-   }
+  goToDetails(repair?: Repair): void {
+     this.router.navigate([PhoneRoutes.Repair, repair?.id || this.selectedRow!.id]);
+  }
 
-   getDate(date: number): string {
-      return toDateString(date);
-   }
+  clearSearch(): void {
+     this.searchControl.setValue('');
+  }
 
-   showPrevRepair(): void {
-      if (this.carouselIndex$.value > 0) {
-         this.carouselIndex$.next(this.carouselIndex$.value - 1);
-      }
-   }
+  getModel(tree: PhoneBrandTree, brandId: number, id: number): string | undefined {
+     return tree.get(brandId)?.find(device => device.id === id)?.name;
+  }
 
-   showNextRepair(): void {
-      this.subs = this.repairsFiltered$.pipe(take(1)).subscribe((repairs) => {
-         if (this.carouselIndex$.value < repairs.length - 1) {
-            this.carouselIndex$.next(this.carouselIndex$.value + 1);
-         }
-      });
-   }
+  getDate(date: number): string {
+     return toDateString(date);
+  }
 
-   selectRow(repair: Repair): void {
-      if (this.selectedRow?.id === repair.id) {
-         this.selectedRow = null;
-      } else {
-         this.selectedRow = repair;
-      }
-   }
+  showPrevRepair(): void {
+     if (this.carouselIndex$.value > 0) {
+        this.carouselIndex$.next(this.carouselIndex$.value - 1);
+     }
+  }
 
-   deleteRow(repair?: Repair): void {
-      const dialogRef = this.dialog.open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, {
-         data: { title: 'Confirm Delete', message: 'Do you confirm deletion of selected record?' }
-      });
+  showNextRepair(): void {
+     if (this.carouselIndex$.value < this.dataSource.data.length - 1) {
+        this.carouselIndex$.next(this.carouselIndex$.value + 1);
+     }
+  }
 
-      dialogRef.afterClosed().pipe(take(1)).subscribe((result) => {
-         if (result) {
-            this.subs = this.phoneRootService.deleteRepair(repair?.id || this.selectedRow!.id).subscribe(() => {
-               this.selectedRow = null;
-            });
-         }
-      });
-   }
+  selectRow(repair: DashboardRepair): void {
+     if (this.selectedRow?.id === repair.id) {
+        this.selectedRow = null;
+     } else {
+        this.selectedRow = repair;
+     }
+  }
 
-   changeStatus(repair?: Repair): void {
-      const dialogRef = this.dialog.open<SelectActionDialogComponent<RepairStatus>,
+  deleteRow(repair?: Repair): void {
+     const dialogRef = this.dialog.open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, {
+        data: { title: 'Confirm Delete', message: 'Do you confirm deletion of selected record?' }
+     });
+
+     dialogRef.afterClosed().pipe(take(1)).subscribe((result) => {
+        if (result) {
+           this.subs = this.service.deleteRepair(repair?.id || this.selectedRow!.id).subscribe(() => {
+              this.selectedRow = null;
+           });
+        }
+     });
+  }
+
+  changeStatus(repair?: DashboardRepair): void {
+     const dialogRef = this.dialog.open<SelectActionDialogComponent<RepairStatus>,
         SelectActionDialogData<RepairStatus>, RepairStatus>(SelectActionDialogComponent, {
            data: {
               title: 'Change Repair Status',
@@ -156,32 +142,14 @@ export class PhoneDashboardComponent extends Unsubscriber {
            }
         });
 
-      dialogRef.afterClosed().pipe(take(1)).subscribe((result) => {
-         if (result) {
-            this.subs = this.phoneRootService.updateRepair({
-               ...omit((repair || this.selectedRow!), ['manufacturer', 'model', 'malfunction']),
-               status: result
-            }).subscribe(() => this.selectedRow = null);
-         }
-      });
-   }
+     dialogRef.afterClosed().pipe(take(1)).subscribe((result) => {
+        if (result) {
+           this.subs = this.service.updateStatus(repair || this.selectedRow!, result).subscribe(() => this.selectedRow = null);
+        }
+     });
+  }
 
-   duplicateRepair(id?: string): void {
-      this.phoneRootService.duplicateRepair(id || this.selectedRow!.id).subscribe();
-   }
-
-   private normalizeRepairs(repairs: Repair[]): DashboardRepair[] {
-      return repairs.map(repair => ({
-         ...repair,
-         manufacturer: repair.manufacturerId
-            ? this.phoneRootService.manufacturers.find(r => r.id === repair.manufacturerId!)!.name : repair.customManufacturer,
-         model: repair.modelId
-            ? this.phoneRootService.phoneBrandTree.get(repair.manufacturerId!)!.find(model => model.id === repair.modelId)!.name
-            : repair.customModel,
-         malfunction: repair.malfunctions.length
-            ? repair.malfunctions.map(malfunction => this.phoneRootService.malfunctions.find(m => malfunction === m.id)!.name)
-               .join(', ').concat(repair.customMalfunction ? `, ${repair.customMalfunction}` : '')
-            : repair.customMalfunction
-      }));
-   }
+  duplicateRepair(id?: string): void {
+     this.service.duplicateRepair(id || this.selectedRow!.id);
+  }
 }

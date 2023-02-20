@@ -6,8 +6,7 @@ import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { PhoneRootService } from '../../phone-root.service';
-import { PhoneDevice, Manufacturer } from '../../../../platform/connection/phone.interfaces';
-import { Repair } from '../../interfaces';
+import { Repair, PhoneDevice, Manufacturer } from '../../interfaces';
 import { RepairStatus } from '../../enums';
 import { RepairRecordedSnackComponent } from '../../components/snacks/repair-recored-snack.component';
 

@@ -1,18 +1,19 @@
-<mat-spinner class="page-spinner" *ngIf="loading$ | async"></mat-spinner>
-<ng-container *ngIf="(loading$ | async)===false">
-  <div class="display-flex">
+<div class="spinner-container" *ngIf="loading$ | async">
+  <mat-spinner class="page-spinner"></mat-spinner>
+</div>
+<div class="display-flex">
     <mat-form-field appearance="fill" class="search-control">
       <mat-label>Search</mat-label>
       <input matInput class="search-control" [formControl]="searchControl" placeholder="search">
     </mat-form-field>
     <button mat-raised-button class="small-content-button" color="warn" [disabled]="!searchControl.value" (click)="clearSearch()"> Clear </button>
-  </div>
-  <ng-container [ngTemplateOutlet]="(mobileMode$| async) ? table: slider" [ngTemplateOutletContext]="{ repair: carouselItem$| async}"></ng-container>
-</ng-container>
+</div>
+<ng-container [ngTemplateOutlet]="(pcMode$| async) ? table: slider" [ngTemplateOutletContext]="{ repair: carouselItem$| async}"></ng-container>
+
 <ng-template #table>
   <ng-container [ngTemplateOutlet]="buttonsContainer"></ng-container>
   <div>
-    <table mat-table [dataSource]="repairsFiltered$ | async" class="mat-elevation-z8">
+    <table mat-table [dataSource]="dataSource"  class="mat-elevation-z8">
 
       <ng-container matColumnDef="model">
         <th mat-header-cell *matHeaderCellDef class="model-cell"> Model </th>
@@ -58,13 +59,13 @@
 
       <tr mat-header-row *matHeaderRowDef="columns"></tr>
       <tr mat-row [ngClass]="row.id!==selectedRow?.id ? row.status.toString() : 'selected'"
-          *matRowDef="let row; columns: columns;" (click)="selectRow(row)" ></tr>
-
-      <mat-paginator [pageSizeOptions]="[5, 10, 20]"
-                     showFirstLastButtons
-                     aria-label="Select page of repairs">
-      </mat-paginator>
+          *matRowDef="let row; columns: columns;" (click)="selectRow(row)" (press)="goToDetails(row)" ></tr>
     </table>
+    <mat-paginator [pageSizeOptions]="[10, 20, 50, 100]"
+                   #paginator
+                   showFirstLastButtons
+                   aria-label="Select page of repairs">
+    </mat-paginator>
   </div>
 
 </ng-template>

@@ -1,15 +1,21 @@
-import { FirestoreDataConverter } from '@firebase/firestore';
-import { DocumentData, SnapshotOptions } from '@angular/fire/compat/firestore';
-import { WithFieldValue } from '@angular/fire/firestore';
+import {
+   FirestoreDataConverter, SnapshotOptions, WithFieldValue, DocumentData, QueryDocumentSnapshot, DocumentReference
+} from '@firebase/firestore';
 import { Repair } from '../interfaces';
 
 export class RepairConverter implements FirestoreDataConverter<Repair> {
-   // TODO change it to QueryDocumentSnapshot<DocumentData>
-   fromFirestore(snapshot: any, options?: SnapshotOptions): Repair {
+   private organizationId: DocumentReference;
+
+   setorganizationId(ref: DocumentReference): void {
+      this.organizationId = ref;
+   }
+
+   fromFirestore(snapshot: QueryDocumentSnapshot<Repair>, options?: SnapshotOptions): Repair {
       const data = snapshot.data(options)!;
 
+      // omit organizationId
       return {
-         id: data.id,
+         id: snapshot.id,
          manufacturerId: data.manufacturerId,
          modelId: data.modelId,
          phoneNumber: data.phoneNumber,
@@ -28,6 +34,10 @@ export class RepairConverter implements FirestoreDataConverter<Repair> {
    }
 
    toFirestore(modelObject: WithFieldValue<Repair>): DocumentData {
+      if (!this.organizationId) {
+         console.error('Organization Ref in Firestore RepairConverter is not found. Setup it first before using the converter!');
+      }
+
       return {
          id: modelObject.id,
          manufacturerId: modelObject.manufacturerId,
@@ -43,7 +53,8 @@ export class RepairConverter implements FirestoreDataConverter<Repair> {
          customManufacturer: modelObject.customManufacturer,
          customModel: modelObject.customModel,
          customMalfunction: modelObject.customMalfunction,
-         status: modelObject.status
+         status: modelObject.status,
+         organizationId: this.organizationId
       };
    }
 }

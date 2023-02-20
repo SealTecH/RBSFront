@@ -1,3 +1,24 @@
-<div>
-  <router-outlet></router-outlet>
-</div>
+<mat-drawer-container class="example-container" [hasBackdrop]="true">
+  <mat-drawer #drawer [mode]="'over'">
+    <mat-list role="list">
+      <mat-list-item role="listitem">
+<!--        <a mat-flat-button [routerLink]="'logout'">-->
+<!--          <mat-icon matListItemIcon>logout</mat-icon>-->
+<!--          Logout-->
+<!--        </a>-->
+        <button mat-flat-button class="menu-btn" (click)="logout()">
+          <mat-icon matListItemIcon>logout</mat-icon>
+          Logout
+        </button>
+      </mat-list-item>
+    </mat-list>
+  </mat-drawer>
+  <mat-drawer-content>
+    <button mat-icon-button color="primary" (click)="drawer.toggle()">
+      <mat-icon fontIcon="menu"></mat-icon>
+    </button>
+    <div>
+      <router-outlet></router-outlet>
+    </div>
+  </mat-drawer-content>
+</mat-drawer-container>

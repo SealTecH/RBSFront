@@ -14,9 +14,9 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
-import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatIconModule } from '@angular/material/icon';
 import { PhoneDashboardComponent } from './pages/phone-dashboard/phone-dashboard.component';
 import { RepairComponent } from './pages/repair/repair.component';
 import { PhoneRoutingModule } from './phone-routing.module';
@@ -42,7 +42,6 @@ import { EditGraphPassDialogComponent } from './dialogs/edit-graph-pass-dialog/e
       PhoneDashboardComponent
    ],
    imports: [
-      AngularFirestoreModule,
       CommonModule,
       PhoneRoutingModule,
       MatSnackBarModule,
