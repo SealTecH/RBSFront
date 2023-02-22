@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import {
-   BehaviorSubject, Observable, take, map, tap, shareReplay, switchMap, finalize
+   BehaviorSubject, Observable, take, map, tap, switchMap, finalize
 } from 'rxjs';
 import { sortBy } from 'lodash-es';
-import { Unsubscriber } from '../../utils/unsubscriber/unsubscriber';
+import { Unsubscriber } from '../../../utils/unsubscriber/unsubscriber';
 import {
    Repair, PhoneBrandTree, Malfunction, Manufacturer
-} from './interfaces';
-import { RepairStatus } from './enums';
-import { PhoneConnectionService } from './phone-connection.service';
+} from '../interfaces';
+import { RepairStatus } from '../enums';
+import { RepairService } from './repair.service';
 
 @Injectable({ providedIn: 'root' })
 export class PhoneRootService extends Unsubscriber {
@@ -24,10 +24,10 @@ export class PhoneRootService extends Unsubscriber {
    private initSource = new BehaviorSubject<boolean>(false);
    readonly isInitialized$ = this.initSource.pipe();
 
-   constructor(private connectionService: PhoneConnectionService) {
+   constructor(private repairService: RepairService) {
       super();
 
-      this.subs = this.connectionService.initPhones().pipe(
+      this.subs = this.repairService.initPhones().pipe(
          take(1),
          tap(([manufacturers, tree, malfunctions]) => {
             this._malfunctions = malfunctions;
@@ -55,7 +55,7 @@ export class PhoneRootService extends Unsubscriber {
    }
 
    getRepairs(): Observable<Repair[]> {
-      return this.connectionService.getAllRepairs().pipe(
+      return this.repairService.getAllRepairs().pipe(
          map(repairs => sortBy(repairs, 'createDate').reverse()),
          tap(res => console.log(res))
       );
@@ -64,7 +64,7 @@ export class PhoneRootService extends Unsubscriber {
    createRepair(repair: Repair): Observable<Repair[]> {
       this.loadingSource.next(true);
 
-      return this.connectionService.createRepair(repair)
+      return this.repairService.createRepair(repair)
          .pipe(
             switchMap(() => this.getRepairs().pipe(tap(repairs => this.repairsSource.next(repairs)))),
             finalize(() => this.loadingSource.next(false))
@@ -74,7 +74,7 @@ export class PhoneRootService extends Unsubscriber {
    updateRepair(repair: Repair): Observable<Repair[]> {
       this.loadingSource.next(true);
 
-      return this.connectionService.updateRepair(repair)
+      return this.repairService.updateRepair(repair)
          .pipe(
             switchMap(() => this.getRepairs().pipe(tap(repairs => this.repairsSource.next(repairs)))),
             finalize(() => this.loadingSource.next(false))
@@ -84,7 +84,7 @@ export class PhoneRootService extends Unsubscriber {
    deleteRepair(id: string): Observable<Repair[]> {
       this.loadingSource.next(true);
 
-      return this.connectionService.deleteRepair(id).pipe(
+      return this.repairService.deleteRepair(id).pipe(
          switchMap(() => this.getRepairs().pipe(tap(repairs => this.repairsSource.next(repairs)))),
          finalize(() => this.loadingSource.next(false))
       );
@@ -93,7 +93,7 @@ export class PhoneRootService extends Unsubscriber {
    getRepairById(id: string): Observable<Repair> {
       this.loadingSource.next(true);
 
-      return this.connectionService.getRepair(id).pipe(finalize(() => this.loadingSource.next(false)));
+      return this.repairService.getRepair(id).pipe(finalize(() => this.loadingSource.next(false)));
    }
 
    duplicateRepair(repairId: string): Observable<string> {
@@ -109,8 +109,9 @@ export class PhoneRootService extends Unsubscriber {
                id: ''
             };
 
-            return this.connectionService.createRepair(repairToCopy);
-         })
+            return this.repairService.createRepair(repairToCopy);
+         }),
+         finalize(() => this.loadingSource.next(false))
       );
    }
 }

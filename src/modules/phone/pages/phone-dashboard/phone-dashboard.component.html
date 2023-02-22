@@ -99,10 +99,21 @@
       <button  mat-raised-button class="content-button" (click)="createNewRepair()">New Repair</button>
     </div>
     <div class="small-btns-container">
-      <button mat-raised-button class="small-content-button" color="warn" [disabled]="selectedRow===null && !repair" (click)="deleteRow(repair)">Delete</button>
-      <button mat-raised-button class="small-content-button" [disabled]="selectedRow===null && !repair" (click)="goToDetails(repair)">Details</button>
-      <button mat-raised-button class="small-content-button" [disabled]="selectedRow===null && !repair" (click)="changeStatus(repair)">Change Status</button>
-      <button mat-raised-button class="small-content-button" [disabled]="selectedRow===null && !repair" (click)="duplicateRepair(repair?.id)">Duplicate</button>
+      <button mat-raised-button class="small-content-button" color="warn" [disabled]="selectedRow===null && !repair" (click)="deleteRow(repair)">
+        <mat-icon fontIcon="delete"></mat-icon>
+      </button>
+      <button mat-raised-button class="small-content-button" [disabled]="selectedRow===null && !repair" (click)="goToDetails(repair)">
+        <mat-icon fontIcon="edit"></mat-icon>
+      </button>
+      <button mat-raised-button class="small-content-button" [disabled]="selectedRow===null && !repair" (click)="changeStatus(repair)">
+        <mat-icon fontIcon="rebase_edit"></mat-icon>
+      </button>
+      <button mat-raised-button class="small-content-button" [disabled]="selectedRow===null && !repair" (click)="duplicateRepair(repair?.id)">
+        <mat-icon fontIcon="file_copy"></mat-icon>
+      </button>
+      <button mat-raised-button class="small-content-button" [disabled]="selectedRow===null && !repair" (click)="showHistory(repair?.id)">
+        <mat-icon fontIcon="history"></mat-icon>
+      </button>
     </div>
   </div>
   <div class="filters-container">

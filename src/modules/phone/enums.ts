@@ -10,5 +10,11 @@ export enum RepairStatus {
 }
 
 export enum Tables {
-  Repairs = 'phone-repairs'
+  Repairs = 'phone-repairs',
+  RepairsHistory = 'repairs-history'
+}
+
+export enum HistoryOperationKeys {
+  __deletedKeys = '__deletedKeys',
+  __newKeys = '__newKeys'
 }

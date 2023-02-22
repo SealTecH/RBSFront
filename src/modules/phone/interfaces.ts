@@ -1,4 +1,6 @@
-import { RepairStatus } from './enums';
+import { DocumentReference } from '@firebase/firestore';
+import { TableUser } from '../../platform/interfaces';
+import { RepairStatus, HistoryOperationKeys } from './enums';
 
 export interface Repair {
   id: string,
@@ -51,3 +53,19 @@ export interface Malfunction {
 }
 
 export type PhoneBrandTree = Map<number, PhoneDevice[]>;
+export type RepairDiffUnit<R extends Partial<Repair> = Repair> = {
+  [key in keyof Partial<Repair>]: {
+    oldValue: R[key] | null,
+    newValue: R[key] | null
+  };
+}
+export type HistoryDiff<R extends Partial<Repair> = Repair> = RepairDiffUnit<R> & {
+  [op in HistoryOperationKeys]: string[]
+}
+
+export interface RepairHistory {
+  diff: string;
+  modifiedDate: number;
+  repairId: DocumentReference<Repair>;
+  userId: DocumentReference<TableUser>;
+}

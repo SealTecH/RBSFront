@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {
-   Observable, forkJoin, map, from, filter
+   Observable, forkJoin, map, from, filter, switchMap
 } from 'rxjs';
 import {
    Firestore,
@@ -15,25 +15,28 @@ import {
    deleteDoc,
    getDoc
 } from '@firebase/firestore';
-import { Unsubscriber } from '../../utils/unsubscriber/unsubscriber';
-import { AuthService } from '../../platform/services/auth/auth.service';
+import { Unsubscriber } from '../../../utils/unsubscriber/unsubscriber';
+import { AuthService } from '../../../platform/services/auth/auth.service';
 import {
    PhoneBrandTree, Malfunction, PhoneDeviceRaw, Manufacturer, PhoneBrandRaw, Repair
-} from './interfaces';
-import { Tables } from './enums';
-import { RepairConverter } from './converters/repairConverter';
+} from '../interfaces';
+import { Tables } from '../enums';
+import { RepairConverter } from '../converters/repair.converter';
+import { RepairHistoryService } from './repair-history.service';
 
 const ALLOWED_MANUFACTURERS_IDS = [4, 80, 57, 82, 95, 44, 45, 106, 74, 72, 73, 62, 6, 7, 1, 110, 114, 999];
 
 @Injectable({
    providedIn: 'root'
 })
-export class PhoneConnectionService extends Unsubscriber {
+export class RepairService extends Unsubscriber {
    readonly converter = new RepairConverter();
    readonly repairsCollection = collection(this.firestore, Tables.Repairs).withConverter<Repair>(this.converter);
+
    constructor(private http: HttpClient,
                private firestore: Firestore,
-               private authService: AuthService) {
+               private authService: AuthService,
+               private repairHistoryService: RepairHistoryService) {
       super();
 
       this.subs = this.authService.user$.pipe(filter(user => !!user)).subscribe((user) => {
@@ -90,7 +93,12 @@ export class PhoneConnectionService extends Unsubscriber {
    }
 
    updateRepair(repair: Repair): Observable<void> {
-      return from(updateDoc(doc(this.firestore, `${Tables.Repairs}/${repair.id}`), { ...repair }));
+      return from(getDoc<Repair>(doc(this.firestore, `${Tables.Repairs}/${repair.id}`).withConverter<Repair>(this.converter))).pipe(
+         switchMap(oldRepair => from(updateDoc(doc(this.firestore, `${Tables.Repairs}/${repair.id}`), { ...repair }))
+            .pipe(map(() => oldRepair))),
+         switchMap(oldRepair => this.repairHistoryService.createHistoryRecord(oldRepair, { ...repair })),
+         map(() => {})
+      );
    }
 
    deleteRepair(id: string): Observable<void> {

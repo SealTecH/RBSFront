@@ -20,7 +20,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { PhoneDashboardComponent } from './pages/phone-dashboard/phone-dashboard.component';
 import { RepairComponent } from './pages/repair/repair.component';
 import { PhoneRoutingModule } from './phone-routing.module';
-import { PhoneRootService } from './phone-root.service';
+import { PhoneRootService } from './services/phone-root.service';
 import { RepairRecordedSnackComponent } from './components/snacks/repair-recored-snack.component';
 import { RepairDetailsComponent } from './pages/repair-details/repair-details.component';
 import { GraphPassComponent } from './components/graph-pass/graph-pass.component';
@@ -59,7 +59,8 @@ import { EditGraphPassDialogComponent } from './dialogs/edit-graph-pass-dialog/e
       MatSelectModule,
       MatCardModule,
       MatCheckboxModule,
-      MatSlideToggleModule
+      MatSlideToggleModule,
+      MatIconModule
    ]
 })
 export class PhoneModule {}

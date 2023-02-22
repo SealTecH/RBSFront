@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import {
-   combineLatest, startWith, map, BehaviorSubject, Observable
+   combineLatest, startWith, map, BehaviorSubject, Observable, tap
 } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { omit } from 'lodash-es';
-import { PhoneRootService } from '../../phone-root.service';
+import { PhoneRootService } from '../../services/phone-root.service';
 import { RepairStatus } from '../../enums';
 import { Repair } from '../../interfaces';
 import { Unsubscriber } from '../../../../utils/unsubscriber/unsubscriber';
@@ -19,6 +19,7 @@ export interface DashboardRepair extends Repair {
 export class PhoneDashboardService extends Unsubscriber {
    readonly loading$ = this.phoneRootService.loading$;
    private dataSource = new BehaviorSubject<DashboardRepair[]>([]);
+   private rawRepairs: Repair[] = [];
    readonly data$ = this.dataSource.pipe();
 
    constructor(private phoneRootService: PhoneRootService) {
@@ -29,7 +30,10 @@ export class PhoneDashboardService extends Unsubscriber {
       this.subs = combineLatest([
          searchControl.valueChanges.pipe(startWith('')),
          hideDoneControl.valueChanges.pipe(startWith(hideDoneControl.value)),
-         this.phoneRootService.repairs$.pipe(map(repairs => this.normalizeRepairs(repairs)))
+         this.phoneRootService.repairs$.pipe(
+            tap(rawRepairs => this.rawRepairs = rawRepairs),
+            map(repairs => this.normalizeRepairs(repairs))
+         )
       ]).pipe(
          map(([search, hideDone, repairs]): [string| null, DashboardRepair[]] => {
             if (hideDone) {
@@ -57,6 +61,10 @@ export class PhoneDashboardService extends Unsubscriber {
          ...omit(repair, ['manufacturer', 'model', 'malfunction']),
          status
       });
+   }
+
+   getRawRepair(id: string): Repair | undefined {
+      return this.rawRepairs.find(r => r.id === id);
    }
 
    private normalizeRepairs(repairs: Repair[]): DashboardRepair[] {

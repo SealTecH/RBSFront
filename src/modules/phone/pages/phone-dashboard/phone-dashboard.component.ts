@@ -22,6 +22,7 @@ import {
 import { Repair, PhoneBrandTree } from '../../interfaces';
 import { toDateString } from '../../../../platform/utils/functions';
 import { ResolutionService } from '../../../../platform/services/resolution/resolution.service';
+import { RepairHistoryDialogComponent } from '../../dialogs/repair-history-dialog/repair-history-dialog.component';
 import { PhoneDashboardService, DashboardRepair } from './phone-dashboard.service';
 
 @Component({
@@ -151,5 +152,12 @@ export class PhoneDashboardComponent extends Unsubscriber implements OnInit {
 
   duplicateRepair(id?: string): void {
      this.service.duplicateRepair(id || this.selectedRow!.id);
+  }
+
+  showHistory(id: string): void {
+     this.dialog.open<RepairHistoryDialogComponent,
+      Repair, RepairStatus>(RepairHistoryDialogComponent, {
+         data: this.service.getRawRepair(id || this.selectedRow!.id)
+      });
   }
 }
