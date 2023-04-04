@@ -73,7 +73,7 @@
 <ng-template #slider let-repair="repair">
   <ng-container [ngTemplateOutlet]="buttonsContainer" [ngTemplateOutletContext]="{repair: repair}"></ng-container>
   <div *ngIf="repair">
-    <mat-card (swipeleft)="showNextRepair()" (swiperight)="showPrevRepair()">
+    <mat-card (swipeleft)="showNextRepair()" (swiperight)="showPrevRepair()" [ngClass]="repair.status.toString()">
       <mat-card-header>
         <mat-card-title>
           <p> Create Date: {{ getDate(repair.createDate) }}</p>

@@ -50,7 +50,7 @@
   flex-wrap: wrap;
 }
 
-.mat-mdc-table .mat-mdc-row {
+.mat-mdc-table .mat-mdc-row, .mat-mdc-card {
   &.selected {
     background-color: $color-selected;
   }

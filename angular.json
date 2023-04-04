@@ -153,5 +153,8 @@
       }
     }
   },
-  "defaultProject": "RBSFront"
+  "defaultProject": "RBSFront",
+  "cli": {
+    "analytics": false
+  }
 }
